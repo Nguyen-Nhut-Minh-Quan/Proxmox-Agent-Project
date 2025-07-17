@@ -1,10 +1,10 @@
 #!/bin/bash
 
-echo "🔧 Proxmox Agent Auto Installer Starting..."
-
+echo "Proxmox Agent Auto Installer Starting..."
+echo " install_agent.sh running!"
 # Step 1: Ensure script runs from its own directory
 cd "$(dirname "$0")" || exit 1
-echo "📂 Current working directory: $(pwd)"
+echo "Current working directory: $(pwd)"
 
 # Step 2: Load environment variables
 if [ -f ./src/.env ]; then
@@ -34,11 +34,11 @@ sudo cp ./systemd/sensor.service /etc/systemd/system/
 sudo cp ./systemd/sensor.timer /etc/systemd/system/
 
 # Step 6: Reload systemd and activate timers
-echo "🔄 Reloading systemd..."
+echo " Reloading systemd..."
 sudo systemctl daemon-reload
 
-echo "🚀 Enabling timers..."
+echo " Enabling timers..."
 sudo systemctl enable sensor_reader.timer --now
 sudo systemctl enable sensor.timer --now
 
-echo "🎉 All systems go. Proxmox agents are installed and running."
+echo " All systems go. Proxmox agents are installed and running."
