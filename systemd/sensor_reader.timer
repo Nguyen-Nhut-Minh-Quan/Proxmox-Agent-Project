@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Sensor Reader Every 5 Minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=30s
+Unit=sensor_reader.service
+
+[Install]
+WantedBy=timers.target
