@@ -1,29 +1,41 @@
 #!/bin/bash
 
-echo " Cloning project to home directory..."
+echo " Proxmox Agent Remote Installer Starting..."
 
-# Clean up previous install if it exists
-if [ -d "$HOME/Proxmox-Agent-Project" ]; then
-  echo " Removing old project folder..."
-  rm -rf "$HOME/Proxmox-Agent-Project"
+# Define install path
+INSTALL_DIR="$HOME/Proxmox-Agent-Project"
+
+# Step 1: Remove old project folder if it exists
+if [ -d "$INSTALL_DIR" ]; then
+  echo " Removing existing directory at $INSTALL_DIR..."
+  rm -rf "$INSTALL_DIR"
 fi
 
-# Clone the repo into ~/Proxmox-Agent-Project
-git clone https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$HOME/Proxmox-Agent-Project"
+# Step 2: Clone the repository
+echo " Cloning repository into $INSTALL_DIR..."
+git clone https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$INSTALL_DIR"
 
-# Move into the folder
-cd "$HOME/Proxmox-Agent-Project" || {
+#  Step 3: Move into project folder
+cd "$INSTALL_DIR" || {
   echo " Failed to enter project directory"
   exit 1
 }
 
-# Make sure the installer script exists
+# Step 4: Ensure working files are checked out
+echo " Checking out master branch..."
+git checkout master
+
+#  Step 5: Verify install_agent.sh exists
 if [ ! -f install_agent.sh ]; then
-  echo "install_agent.sh not found in $(pwd)"
+  echo " install_agent.sh not found in $(pwd)"
+  echo " Contents of folder:"
   ls -la
   exit 1
 fi
 
-# Run the installer
+#  Step 6: Run install_agent.sh with logging
+echo "✅ install_agent.sh found — launching installer..."
 chmod +x install_agent.sh
-./install_agent.sh
+./install_agent.sh | tee ~/install_log.txt
+
+echo " Installer complete. Check ~/install_log.txt for full output."
