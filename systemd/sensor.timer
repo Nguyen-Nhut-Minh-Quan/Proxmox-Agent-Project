@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Sensor Every 5 Minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=30s
+Unit=sensor.service
+
+[Install]
+WantedBy=timers.target
