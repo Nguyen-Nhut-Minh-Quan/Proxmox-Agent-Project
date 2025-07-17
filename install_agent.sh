@@ -17,15 +17,11 @@ echo " VirtualServerStat.sh made executable"
 # Step 4: Compile C agents
 echo " Compiling Test.c..."
 gcc -g -o ./src/test ./src/test.c $(pkg-config --cflags --libs libmongoc-1.0)
-mkdir -p /opt/proxmox-agent
-cp ./src/test /opt/proxmox-agent/test
-cp ./src/VirtualServerStat.sh /opt/proxmox-agent/VirtualServerStat.sh
-cp ./src/.env /opt/proxmox-agent/.env
-source /opt/proxmox-agent/.env
+
 echo " Compiling Temp_Read.c..."
 gcc -o ./src/main ./src/Temp_Read.c -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 $(pkg-config --cflags --libs libmongoc-1.0)
-cp ./src/main /opt/promox-agent/main
 # Step 5: Install systemd service/timer units
+mv ~/Proxmox-Agent-Project /opt/
 echo " Copying systemd units..."
 sudo cp ./systemd/sensor_reader.service /etc/systemd/system/
 sudo cp ./systemd/sensor_reader.timer /etc/systemd/system/
