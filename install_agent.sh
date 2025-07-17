@@ -1,7 +1,4 @@
 #!/bin/bash
-
-echo "🚀 Proxmox Agent Auto Installer Starting..."
-
 # Step 0: Get the script's current directory
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
