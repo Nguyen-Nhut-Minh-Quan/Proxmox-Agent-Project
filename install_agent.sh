@@ -19,6 +19,16 @@ if [ ! -f "$INSTALL_DIR/src/.env" ]; then
   echo "❌ .env file missing in src/ — aborting install."
   exit 1
 fi
+# Step 2.1: Convert Bash-style env to systemd-compatible env
+if [ ! -f "$INSTALL_DIR/src/.env" ]; then
+  echo "❌ .env.bash not found in src/ — aborting install."
+  exit 1
+fi
+
+echo "🔁 Converting .env to .env.systemd..."
+grep -oP '^export \K.*' "$INSTALL_DIR/src/.env" > "$INSTALL_DIR/src/.env.systemd"
+echo "✅ .env.systemd updated successfully."
+
 source "$INSTALL_DIR/src/.env"
 echo "✅ Environment variables loaded."
 
