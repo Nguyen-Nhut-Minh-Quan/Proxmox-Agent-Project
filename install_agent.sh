@@ -8,7 +8,7 @@ echo "Current working directory: $(pwd)"
 
 # Step 2: Load environment variables
 if [ -f ./src/.env ]; then
-    source ./src/.env
+    source /src/.env
     echo "Environment variables loaded from .env"
 else
     echo ".env file not found in ./src"
