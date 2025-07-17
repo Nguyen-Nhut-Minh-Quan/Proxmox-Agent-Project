@@ -2,24 +2,34 @@
 
 echo "🚀 Proxmox Agent Auto Installer Starting..."
 
-# Define base working directory
-BASE_DIR="/opt/Proxmox-Agent-Project"
-cd "$BASE_DIR" || { echo "❌ Failed to access $BASE_DIR"; exit 1; }
+# Step 0: Get the script's current directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Step 1: Move the folder into /opt if it's not already there
+INSTALL_DIR="/opt/Proxmox-Agent-Project"
+
+if [ "$SCRIPT_DIR" != "$INSTALL_DIR" ]; then
+  echo "📦 Moving agent folder to $INSTALL_DIR..."
+  rm -rf "$INSTALL_DIR"           # Remove any existing copy
+  mv "$SCRIPT_DIR" "$INSTALL_DIR" || { echo "❌ Move failed!"; exit 1; }
+fi
+
+cd "$INSTALL_DIR" || { echo "❌ Failed to access $INSTALL_DIR"; exit 1; }
 echo "📂 Working directory: $(pwd)"
 
-# Load environment variables
-if [ ! -f "$BASE_DIR/src/.env" ]; then
+# Step 2: Load environment variables
+if [ ! -f "$INSTALL_DIR/src/.env" ]; then
   echo "❌ .env file missing in src/ — aborting install."
   exit 1
 fi
-source "$BASE_DIR/src/.env"
+source "$INSTALL_DIR/src/.env"
 echo "✅ Environment variables loaded."
 
-# Install dependencies
+# Step 3: Install dependencies
 echo "🔍 Checking and installing dependencies..."
 apt-get update
 
-# Git check
+# Git
 if ! command -v git &> /dev/null; then
   echo "📦 Installing Git..."
   apt-get install git -y
@@ -27,7 +37,7 @@ else
   echo "✅ Git is already installed."
 fi
 
-# libusbtc08 check
+# libusbtc08
 if ! ldconfig -p | grep -q libusbtc08; then
   echo "📦 Installing libusbtc08 (with PicoScope repo)..."
   wget -O- https://labs.picotech.com/Release.gpg.key | gpg --dearmor > /usr/share/keyrings/picotech-archive-keyring.gpg
@@ -38,25 +48,24 @@ else
   echo "✅ libusbtc08 already present."
 fi
 
-# Compile C agents
+# Step 4: Compile C agents
 echo "🛠️ Compiling test.c..."
-gcc -g -o "$BASE_DIR/src/test" "$BASE_DIR/src/test.c" $(pkg-config --cflags --libs libmongoc-1.0) || { echo "❌ Failed to compile test.c"; exit 1; }
+gcc -g -o "$INSTALL_DIR/src/test" "$INSTALL_DIR/src/test.c" $(pkg-config --cflags --libs libmongoc-1.0) || { echo "❌ Failed to compile test.c"; exit 1; }
 
 echo "🛠️ Compiling Temp_Read.c..."
-gcc -o "$BASE_DIR/src/main" "$BASE_DIR/src/Temp_Read.c" -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 $(pkg-config --cflags --libs libmongoc-1.0) || { echo "❌ Failed to compile Temp_Read.c"; exit 1; }
+gcc -o "$INSTALL_DIR/src/main" "$INSTALL_DIR/src/Temp_Read.c" -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 $(pkg-config --cflags --libs libmongoc-1.0) || { echo "❌ Failed to compile Temp_Read.c"; exit 1; }
 
-# Make Bash helper executable
-chmod +x "$BASE_DIR/src/VirtualServerStat.sh"
+# Step 5: Bash helper
+chmod +x "$INSTALL_DIR/src/VirtualServerStat.sh"
 echo "🔓 VirtualServerStat.sh is now executable."
 
-# Copy systemd unit files
+# Step 6: Systemd service/timer setup
 echo "📦 Installing systemd service units..."
-cp "$BASE_DIR/systemd/sensor_reader.service" /etc/systemd/system/
-cp "$BASE_DIR/systemd/sensor_reader.timer" /etc/systemd/system/
-cp "$BASE_DIR/systemd/sensor.service" /etc/systemd/system/
-cp "$BASE_DIR/systemd/sensor.timer" /etc/systemd/system/
+cp "$INSTALL_DIR/systemd/sensor_reader.service" /etc/systemd/system/
+cp "$INSTALL_DIR/systemd/sensor_reader.timer" /etc/systemd/system/
+cp "$INSTALL_DIR/systemd/sensor.service" /etc/systemd/system/
+cp "$INSTALL_DIR/systemd/sensor.timer" /etc/systemd/system/
 
-# Reload systemd and enable services
 echo "🔁 Reloading systemd..."
 systemctl daemon-reload
 
@@ -64,4 +73,4 @@ echo "✅ Enabling timers..."
 systemctl enable sensor_reader.timer --now
 systemctl enable sensor.timer --now
 
-echo "🎉 All systems go! Agents are compiled, installed, and services are running."
+echo "🎉 Installation complete! Your agents are compiled, services running, and timers active."
