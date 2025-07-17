@@ -24,7 +24,7 @@ echo " Compiling Test.c..."
 gcc -g -o ./src/test ./src/test.c $(pkg-config --cflags --libs libmongoc-1.0)
 mkdir -p /opt/proxmox-agent
 cp ./src/test /opt/proxmox-agent/test
-cp ./src/VirtualServerStat.sh /opt/promox-agent/test
+cp ./src/VirtualServerStat.sh /opt/promox-agent/VirtualServerStat.sh
 
 echo " Compiling Temp_Read.c..."
 gcc -o ./src/main ./src/Temp_Read.c -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 $(pkg-config --cflags --libs libmongoc-1.0)
