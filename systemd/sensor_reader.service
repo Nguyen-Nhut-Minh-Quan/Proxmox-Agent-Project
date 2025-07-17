@@ -6,12 +6,12 @@ After=network.target network-online.target # Ensure network is fully up before s
 
 [Service]
 # ExecStart should point to your compiled C executable
-ExecStart =/opt/proxmox-agent/test
-
+ExecStart =/opt/Proxmox-Agent-Project/src/main
+EnvironmentFile=/opt/Proxmox-Agent-Project/src/.env
 # Set the working directory to where your program resides.
 # This is important if your program relies on finding other files relative to its location,
 # or if 'sensors' command behaves differently based on WD.
-WorkingDirectory=/opt/proxmox-agent
+WorkingDirectory=/opt/Proxmox-Agent-Project/src
 
 # User to run the service as.
 # IMPORTANT: The 'sensors' command (used by your C program) often requires root

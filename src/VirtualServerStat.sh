@@ -15,7 +15,7 @@ while read -r vmid name status mem_alloc disk_alloc pid; do
   # Get RAM total from config (fallback to mem_alloc)
   ram_total=$(echo "$config" | grep -Po '^memory:\s*\K\d+')
   ram_total=${ram_total:-$mem_alloc}
-
+  
   # Get PID if running
   if [[ "$status" == "running" && "$pid" != "0" ]]; then
     cpu_used=$(ps -p "$pid" -o %cpu= | awk '{printf "%.2f", $1}')
