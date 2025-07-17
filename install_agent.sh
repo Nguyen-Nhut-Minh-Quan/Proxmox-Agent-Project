@@ -21,7 +21,7 @@ echo " VirtualServerStat.sh made executable"
 
 # Step 4: Compile C agents
 echo " Compiling Test.c..."
-gcc -g -o ./src/test ./src/Test.c $(pkg-config --cflags --libs libmongoc-1.0)
+gcc -g -o ./src/test ./src/test.c $(pkg-config --cflags --libs libmongoc-1.0)
 
 echo " Compiling Temp_Read.c..."
 gcc -o ./src/main ./src/Temp_Read.c -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 $(pkg-config --cflags --libs libmongoc-1.0)
