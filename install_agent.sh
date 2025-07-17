@@ -7,13 +7,8 @@ cd "$(dirname "$0")" || exit 1
 echo "Current working directory: $(pwd)"
 
 # Step 2: Load environment variables
-if [ -f ./src/.env ]; then
-    source /src/.env
-    echo "Environment variables loaded from .env"
-else
-    echo ".env file not found in ./src"
-    exit 1
-fi
+source ./src/.env
+echo "Environment variables loaded from .env"
 
 # Step 3: Make bash helper executable
 chmod +x ./src/VirtualServerStat.sh
