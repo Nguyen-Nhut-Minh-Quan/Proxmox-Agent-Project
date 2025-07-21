@@ -12,8 +12,8 @@ fi
 cd "$INSTALL_DIR" || { echo "❌ Failed to access $INSTALL_DIR"; exit 1; }
 echo "📂 Working directory: $(pwd)"
 # Step 2: Load environment variables
-if [ ! -f "$INSTALL_DIR/src/.tank_agent_env" ]; then
-  echo "❌ .env file missing in src/ — aborting install."
+if [ ! -f "$INSTALL_DIR/.tank_agent_env" ]; then
+  echo "❌ .env file missing  — aborting install."
   exit 1
 fi
 # Step 3: Install dependencies
@@ -35,7 +35,7 @@ if ! dpkg -s liblust-dev &> /dev/null; then
 fi
 #step 4 : Compiling file 
 echo "🛠️ Compiling tank_agent.c..."
-gcc -o "$INSTALL_DIR/src/tank_agent" "$INSTALL_DIR/src/tank_agent.c" -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || { echo "❌ Failed to compile tank_agent.c"; exit 1; }
+gcc -o "$INSTALL_DIR/tank_agent" "$INSTALL_DIR/tank_agent.c" -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || { echo "❌ Failed to compile tank_agent.c"; exit 1; }
 # Step 5: Systemd service/timer setup
 echo "📦 Installing systemd service units..."
 cp "$INSTALL_DIR/systemd/tank_agent.service" /etc/systemd/system/
