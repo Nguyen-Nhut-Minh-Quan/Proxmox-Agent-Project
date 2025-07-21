@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo " Proxmox Agent Remote Installer Starting..."
 
 if ! command -v git &> /dev/null; then
