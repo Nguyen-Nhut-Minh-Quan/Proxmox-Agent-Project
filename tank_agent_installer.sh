@@ -1,7 +1,8 @@
 #!/bin/bash
 
-echo " Proxmox Agent Remote Installer Starting..."
+echo "🚀 Proxmox Agent Remote Installer Starting..."
 
+# Check and install Git
 if ! command -v git &> /dev/null; then
   echo "📦 Git not found — installing it now..."
   apt-get update
@@ -9,40 +10,40 @@ if ! command -v git &> /dev/null; then
 else
   echo "✅ Git is already installed."
 fi
+
 # Define install path
 INSTALL_DIR="$HOME/Tank-Agent"
 
-# Step 1: Remove old project folder if it exists
+# Clean install path
 if [ -d "$INSTALL_DIR" ]; then
-  echo " Removing existing directory at $INSTALL_DIR..."
+  echo "🧹 Removing existing directory at $INSTALL_DIR..."
   rm -rf "$INSTALL_DIR"
 fi
+mkdir -p "$INSTALL_DIR"
 
-# Step 2: Clone the repository
-echo " Cloning repository into $INSTALL_DIR..."
-git clone https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$INSTALL_DIR"
+# Clone repo into temp directory
+TMP_DIR="/tmp/proxmox_install"
+rm -rf "$TMP_DIR"
+git clone https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$TMP_DIR"
 
-#  Step 3: Move into project folder
-cd "$INSTALL_DIR" || {
-  echo " Failed to enter project directory"
-  exit 1
-}
+# Move desired components
+echo "📁 Copying required files..."
+cp -r "$TMP_DIR/Agent_For_Tank" "$INSTALL_DIR/"
+cp "$TMP_DIR/install_tank.sh" "$INSTALL_DIR/"
+mkdir -p "$INSTALL_DIR/system"
+cp "$TMP_DIR/system/tank_agent.service" "$INSTALL_DIR/system/"
+cp "$TMP_DIR/system/tank_agent.timer" "$INSTALL_DIR/system/"
 
-# Step 4: Ensure working files are checked out
-echo " Checking out master branch..."
-git checkout master
+# Cleanup temp folder
+rm -rf "$TMP_DIR"
 
-#  Step 5: Verify install_agent.sh exists
-if [ ! -f install_proxmox.sh ]; then
-  echo " install_agent.sh not found in $(pwd)"
-  echo " Contents of folder:"
-  ls -la
-  exit 1
-fi
+# Launch installer
+cd "$INSTALL_DIR" || { echo "❌ Failed to enter $INSTALL_DIR"; exit 1; }
 
-#  Step 6: Run install_agent.sh with logging
-echo "✅ install_tank.sh found — launching installer..."
+echo "🛠 Setting executable permissions..."
 chmod +x install_tank.sh
+
+echo "🚦 Launching installer..."
 ./install_tank.sh | tee ~/install_log.txt
 
-echo " Installer complete. Check ~/install_log.txt for full output."
+echo "✅ Installer complete. Log saved to ~/install_log.txt"
