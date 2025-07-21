@@ -1,17 +1,17 @@
 [Unit]
-Description=Sensor Reader C Program
+Description=Tank Temperature Reader C Program
 After=network.target network-online.target # Ensure network is fully up before starting
 # If MongoDB is on the same machine and managed by systemd, uncomment:
 # After=mongod.service
 
 [Service]
 # ExecStart should point to your compiled C executable
-ExecStart =/opt/Proxmox-Agent-Project/src/test
-EnvironmentFile=/opt/Proxmox-Agent-Project/src/.env
+ExecStart=/opt/Tank-Agent/src/tank_agent
+EnvironmentFile=/opt/Tank-Agent/src/.tank_agent_env
 # Set the working directory to where your program resides.
 # This is important if your program relies on finding other files relative to its location,
 # or if 'sensors' command behaves differently based on WD.
-WorkingDirectory=/opt/Proxmox-Agent-Project/src
+WorkingDirectory=/opt/Tank-Agent/src
 
 # User to run the service as.
 # IMPORTANT: The 'sensors' command (used by your C program) often requires root
@@ -22,8 +22,8 @@ WorkingDirectory=/opt/Proxmox-Agent-Project/src
 # Consider changing to a less privileged user if possible and safe for 'sensors' command.
 # Group=root # Uncomment if User=root is chosen
 
-StandardOutput=journal
-StandardError=journal
+StandardOutput=journal+console
+StandardError=journal+console
 Restart=on-failure
 RestartSec=5s # Wait 5 seconds before restarting
 

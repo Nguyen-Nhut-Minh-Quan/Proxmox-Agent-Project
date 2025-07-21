@@ -10,7 +10,7 @@ else
   echo "✅ Git is already installed."
 fi
 # Define install path
-INSTALL_DIR="$HOME/Proxmox-Agent-Project"
+INSTALL_DIR="$HOME/Proxmox-Agent"
 
 # Step 1: Remove old project folder if it exists
 if [ -d "$INSTALL_DIR" ]; then
@@ -33,7 +33,7 @@ echo " Checking out master branch..."
 git checkout master
 
 #  Step 5: Verify install_agent.sh exists
-if [ ! -f install_agent.sh ]; then
+if [ ! -f install_proxmox.sh ]; then
   echo " install_agent.sh not found in $(pwd)"
   echo " Contents of folder:"
   ls -la
@@ -41,8 +41,8 @@ if [ ! -f install_agent.sh ]; then
 fi
 
 #  Step 6: Run install_agent.sh with logging
-echo "✅ install_agent.sh found — launching installer..."
-chmod +x install_agent.sh
-./install_agent.sh | tee ~/install_log.txt
+echo "✅ install_proxmox.sh found — launching installer..."
+chmod +x install_proxmox.sh
+./install_proxmox.sh | tee ~/install_log.txt
 
 echo " Installer complete. Check ~/install_log.txt for full output."

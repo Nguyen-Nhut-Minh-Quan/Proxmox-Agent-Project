@@ -1,0 +1,5 @@
+export SERVER_OBJECT_ID=server-001
+export TANK_LOCATION=CACH-MANG-THANG-8
+export TANK_NUMBER=1
+export NUM_LAYERS=3
+export FASTAPI_BASE_URL=http://11.0.0.13:8000/api
