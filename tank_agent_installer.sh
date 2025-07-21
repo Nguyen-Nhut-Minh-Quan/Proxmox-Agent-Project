@@ -1,6 +1,16 @@
 #!/bin/bash
 
 echo "🚀 Starting Proxmox Agent Setup..."
+# Check for sudo and install if missing
+if ! command -v sudo &>/dev/null; then
+  echo "🔧 'sudo' not found — installing it now..."
+  apt update && apt install sudo -y || {
+    echo "❌ Failed to install 'sudo'. Aborting setup."
+    exit 1
+  }
+else
+  echo "✅ 'sudo' is already installed."
+fi
 # Check for Git and install if missing
 if ! command -v git &>/dev/null; then
   echo "📦 Git not found — installing..."
