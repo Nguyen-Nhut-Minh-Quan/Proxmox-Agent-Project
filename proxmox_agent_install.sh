@@ -26,7 +26,7 @@ git clone https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git ~/P
 
 # Navigate into the repo
 cd ~/Proxmox-Agent-Project || { echo "❌ Failed to enter directory"; exit 1; }
-
+git checkout master
 # Make the script executable and run it
 chmod +x install_proxmox.sh
 ./install_proxmox.sh
