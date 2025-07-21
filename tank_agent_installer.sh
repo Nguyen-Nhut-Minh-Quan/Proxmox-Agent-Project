@@ -1,4 +1,10 @@
 #!/bin/bash
+echo " Proxmox Agent Remote Installer Starting..."
+
+if ! command -v git &> /dev/null; then
+  echo "📦 Git not found — installing it now..."
+  apt-get update
+  apt-get install git -y || { echo "❌ Git install failed — aborting."; exit 1; }
 
 echo "🚀 Starting Proxmox Agent Setup..."
 # Check for sudo and install if missing
