@@ -6,12 +6,12 @@ After=network.target network-online.target # Ensure network is fully up before s
 
 [Service]
 # ExecStart should point to your compiled C executable
-ExecStart=/opt/Tank-Agent/src/tank_agent
-EnvironmentFile=/opt/Tank-Agent/src/.tank_agent_env
+ExecStart=/opt/Tank-Agent/tank_agent
+EnvironmentFile=/opt/Tank-Agent/.tank_agent_env
 # Set the working directory to where your program resides.
 # This is important if your program relies on finding other files relative to its location,
 # or if 'sensors' command behaves differently based on WD.
-WorkingDirectory=/opt/Tank-Agent/src
+WorkingDirectory=/opt/Tank-Agent/
 
 # User to run the service as.
 # IMPORTANT: The 'sensors' command (used by your C program) often requires root
