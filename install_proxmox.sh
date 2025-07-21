@@ -15,7 +15,7 @@ cd "$INSTALL_DIR" || { echo "❌ Failed to access $INSTALL_DIR"; exit 1; }
 echo "📂 Working directory: $(pwd)"
 
 # Step 2: Load environment variables
-if [ ! -f "$INSTALL_DIR/src/.proxmox_agent_env" ]; then
+if [ ! -f "$INSTALL_DIR/.proxmox_agent_env" ]; then
   echo "❌ .env file missing in src/ — aborting install."
   exit 1
 fi
@@ -31,10 +31,10 @@ fi
 
 # Step 4: Compile C agents
 echo "🛠️ Compiling test.c..."
-gcc -o "$INSTALL_DIR/src/proxmox_agent" "$INSTALL_DIR/src/proxmox_agent.c" -lcurl || { echo "❌ Failed to compile test.c"; exit 1; }
+gcc -o "$INSTALL_DIR/proxmox_agent" "$INSTALL_DIR/proxmox_agent.c" -lcurl || { echo "❌ Failed to compile test.c"; exit 1; }
 
 # Step 5: Bash helper
-chmod +x "$INSTALL_DIR/src/VirtualServerStat.sh"
+chmod +x "$INSTALL_DIR/VirtualServerStat.sh"
 echo "🔓 VirtualServerStat.sh is now executable."
 
 # Step 6: Systemd service/timer setup
