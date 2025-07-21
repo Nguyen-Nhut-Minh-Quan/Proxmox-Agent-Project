@@ -3,7 +3,7 @@
 echo "🚀 Starting Agent_For_Server Installation..."
 
 INSTALL_DIR="/opt/Agent_For_Server"
-REPO_DIR="/tmp/Proxmox-Agent-Project"
+REPO_DIR="/root/Proxmox-Agent-Project"
 
 # Ensure dependencies
 
