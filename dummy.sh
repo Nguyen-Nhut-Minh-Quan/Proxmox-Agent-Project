@@ -47,7 +47,9 @@ fi
 
 if ! dpkg -s liblust-dev &> /dev/null; then
   echo "📦 Installing Lust library..."
-  sudo apt update && apt-get install -y liblust-dev
+  sudo apt update && sudo apt-get install -y liblust-dev
+else 
+  echo "LUST HAS EXISTED BITCH"
 fi
 
 # Move only Agent_For_Server folder
