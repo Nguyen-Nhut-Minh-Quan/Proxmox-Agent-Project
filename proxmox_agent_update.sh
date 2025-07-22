@@ -4,45 +4,37 @@ INSTALL_DIR="/opt/Proxmox-Agent"
 REPO_DIR="$(pwd)/Proxmox-Agent-Project"
 REPO_URL="https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git"
 
-echo "🔄 Checking for updates to Proxmox-Agent-Project..."
+echo "🔄 Updating Proxmox-Agent..."
 
-# Clone fresh repo if it doesn't exist
-if [ ! -d "$REPO_DIR" ]; then
-  echo "📥 Local repo missing — cloning fresh copy..."
-  git clone --branch master "$REPO_URL" "$REPO_DIR" || {
-    echo "❌ Git clone failed. Abort."
-    exit 1
-  }
-else
-  echo "✅ Repo found. Fetching latest..."
-  cd "$REPO_DIR" && git fetch origin master
-fi
+# Always re-clone fresh
+rm -rf "$REPO_DIR"
+git clone --branch master "$REPO_URL" "$REPO_DIR" || {
+  echo "❌ Git clone failed. Aborting."; exit 1;
+}
 
-cd "$REPO_DIR" || { echo "❌ Couldn't enter repo directory. Abort."; exit 1; }
+# Move agent folder into install dir
+sudo rm -rf "$INSTALL_DIR"
+sudo mv "$REPO_DIR/Agent_For_Server" "$INSTALL_DIR"
 
-LOCAL_COMMIT=$(git rev-parse HEAD)
-REMOTE_COMMIT=$(git rev-parse origin/master)
+# Compile the agent binary
+echo "🛠️ Building proxmox_agent..."
+cd "$INSTALL_DIR" || { echo "❌ Install dir missing. Abort."; exit 1; }
+gcc -o proxmox_agent proxmox_agent.c -lcurl || {
+  echo "❌ Compilation failed."; exit 1;
+}
 
-if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
-  echo "🚀 Update detected! Syncing latest files..."
-  git pull origin master || { echo "❌ Git pull failed. Abort."; exit 1; }
+# Add build timestamp check
+echo "✅ Build complete. Binary timestamp: $(date)"
 
-  echo "🔄 Moving updated Agent_For_Server to $INSTALL_DIR..."
-  sudo rm -rf "$INSTALL_DIR"
-  sudo mv "$REPO_DIR/Agent_For_Server" "$INSTALL_DIR"
+# Create global symlink so one-liners always use latest binary
+sudo ln -sf "$INSTALL_DIR/proxmox_agent" /usr/local/bin/proxmox_agent
 
-  echo "🛠️ Recompiling agent..."
-  cd "$INSTALL_DIR" && gcc -o proxmox_agent proxmox_agent.c -lcurl || {
-    echo "❌ Compilation failed."; exit 1;
-  }
+# Reload and restart systemd units
+echo "🔁 Restarting systemd timer..."
+sudo systemctl daemon-reload
+sudo systemctl restart proxmox_agent.timer
 
-  echo "📦 Restarting systemd service..."
-  sudo systemctl daemon-reload
-  sudo systemctl restart proxmox_agent.timer
+# Clean up cloned repo
+rm -rf "$REPO_DIR"
 
-  echo "✅ Update applied successfully!"
-else
-  echo "📡 No new updates. Agent is up-to-date."
-fi
-
-sudo rm -rf "$REPO_DIR"
+echo "🎉 Update complete! Agent is synced, compiled, linked, and live."
