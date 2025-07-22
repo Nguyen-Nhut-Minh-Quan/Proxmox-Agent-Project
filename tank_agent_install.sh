@@ -59,10 +59,10 @@ fi
 
 ldconfig -p | grep -q libusbtc08 || (
   echo "📦 libusbtc08 not found — installing..."
-  wget -O- https://labs.picotech.com/Release.gpg.key | gpg --dearmor > /usr/share/keyrings/picotech-archive-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/picotech-archive-keyring.gpg] https://labs.picotech.com/rc/picoscope7/debian/ picoscope main" > /etc/apt/sources.list.d/picoscope7.list
-  apt-get update
-  apt-get install picoscope libusbtc08 -y
+  sudo bash -c 'wget -O- https://labs.picotech.com/Release.gpg.key | gpg --dearmor > /usr/share/keyrings/picotech-archive-keyring.gpg'
+  sudo bash -c 'echo "deb [signed-by=/usr/share/keyrings/picotech-archive-keyring.gpg] https://labs.picotech.com/picoscope7/debian/ picoscope main" >/etc/apt/sources.list.d/picoscope7.list'
+  sudo apt-get update
+  sudo apt-get install picoscope
 )
 
 # Move only Agent_For_Server folder
