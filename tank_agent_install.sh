@@ -71,10 +71,9 @@ sudo mv "$REPO_DIR/Agent_For_Tank" "$INSTALL_DIR"
 
 # Compile C agent
 echo "🛠️ Compiling C agent..."
-echo "${REPO_DIR}"
 cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
 
-
+echo "${REPO_DIR}"
 gcc tank_agent.c -o tank_agent -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || {
   echo "❌ Compilation failed."
   exit 1
