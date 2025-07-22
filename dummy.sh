@@ -34,6 +34,19 @@ rm -rf "$REPO_DIR"
 git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_DIR" || {
   echo "❌ Git clone failed. Aborting."; exit 1;
 }
+#!/bin/bash
+
+# Check if 'sensors' command exists
+if ! command -v sensors &> /dev/null; then
+    echo "'sensors' not found. Installing lm-sensors..."
+    sudo apt update && sudo apt install -y lm-sensors
+
+    # Optional: run sensors-detect interactively
+    echo "Running sensors-detect to configure available sensors..."
+    sudo sensors-detect --auto
+else
+    echo "'sensors' is already installed."
+fi
 
 if ! command -v gcc &>/dev/null; then
   echo "🧰 GCC compiler not found — installing build-essential..."
