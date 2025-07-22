@@ -45,4 +45,4 @@ else
   echo "📡 No new updates. Agent is up-to-date."
 fi
 
-sudo rm -rf "$REPO_DIR"_
+sudo rm -rf "$REPO_DIR"
