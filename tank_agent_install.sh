@@ -30,7 +30,7 @@ fi
 # Clean up and clone
 echo "📁 Fetching Agent_For_Server files..."
 sudo rm -rf "$INSTALL_DIR"
-rm -rf "$REPO_DIR"
+sudo rm -rf "$REPO_DIR"
 sudo git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_DIR" || {
   echo "❌ Git clone failed. Aborting."; exit 1;
 }
@@ -49,7 +49,7 @@ fi
 
 if ! dpkg -s libcurl4-openssl-dev &>/dev/null; then
   echo "📦 Installing libcurl development package..."
-  sudo apt update && sudo apt install -y libcurl4-openssl-dev || {
+  sudo sudo apt update && sudo apt install -y libcurl4-openssl-dev || {
     echo "❌ Failed to install libcurl headers. Aborting."
     exit 1
   }
@@ -70,7 +70,7 @@ sudo mv "$REPO_DIR/Agent_For_Tank" "$INSTALL_DIR"
 
 # Compile C agent
 echo "🛠️ Compiling C agent..."
-cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
+sudo cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
 
 
 gcc -o gcc tank_agent.c -o tank_agent -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || {
