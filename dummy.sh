@@ -71,7 +71,8 @@ else
 fi
 
 gcc -o proxmox_agent proxmox_agent.c -lcurl || {
-  echo "❌ Compilation failed."; exit 1;
+  echo "❌ Compilation failed."
+  exit 1
 }
 
 
