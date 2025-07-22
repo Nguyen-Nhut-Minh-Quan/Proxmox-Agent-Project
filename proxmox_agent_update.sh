@@ -45,5 +45,4 @@ else
   echo "📡 No new updates. Agent is up-to-date."
 fi
 
-sudo rm -rf "$REPO_DIR"
-sudo rm -rf "/opt/Proxmox-Agent-Project"
+sudo rm -rf "$REPO_DIR"_
