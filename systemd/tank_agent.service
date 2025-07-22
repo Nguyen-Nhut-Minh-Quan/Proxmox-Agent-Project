@@ -1,31 +1,20 @@
 [Unit]
-Description=Tank Temperature Reader C Program
-After=network.target network-online.target # Ensure network is fully up before starting
-# If MongoDB is on the same machine and managed by systemd, uncomment:
-# After=mongod.service
+Description=Sensor Reader C Program
+After=network.target network-online.target
 
 [Service]
-# ExecStart should point to your compiled C executable
-ExecStart=/opt/Tank-Agent/tank_agent
+ExecStart=/opt/Tank-Agent/proxmox_agent
 EnvironmentFile=/opt/Tank-Agent/.env
-# Set the working directory to where your program resides.
-# This is important if your program relies on finding other files relative to its location,
-# or if 'sensors' command behaves differently based on WD.
 WorkingDirectory=/opt/Tank-Agent/
 
-# User to run the service as.
-# IMPORTANT: The 'sensors' command (used by your C program) often requires root
-# privileges or specific group memberships to access hardware sensors.
-# If your 'sensors' command fails when run by a normal user, you might need to:
-# 1. Run the service as root (uncomment User=root) - less secure but often simplest for sensor access.
-# 2. Add the user to a group that has sensor access (e.g., 'adm' or 'kmem' if applicable, check your system).
-# Consider changing to a less privileged user if possible and safe for 'sensors' command.
-# Group=root # Uncomment if User=root is chosen
+# Uncomment the lines below if needed
+#User=root
+#Group=root
 
-StandardOutput=journal+console
-StandardError=journal+console
+StandardOutput=journal
+StandardError=journal
 Restart=on-failure
-RestartSec=5s # Wait 5 seconds before restarting
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
