@@ -31,7 +31,7 @@ fi
 echo "📁 Fetching Agent_For_Server files..."
 sudo rm -rf "$INSTALL_DIR"
 rm -rf "$REPO_DIR"
-git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_DIR" || {
+sudo git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_DIR" || {
   echo "❌ Git clone failed. Aborting."; exit 1;
 }
 #!/bin/bash
