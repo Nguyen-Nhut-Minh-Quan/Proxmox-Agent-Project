@@ -107,5 +107,6 @@ sudo cp "$REPO_DIR/systemd/proxmox_agent.service" /etc/systemd/system/
 sudo cp "$REPO_DIR/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable proxmox_agent.timer --now
+sudo rm -rf "$REPO_DIR"
 
 echo "🎉 Installation complete! Agent is compiled, active, and scheduled via systemd."
