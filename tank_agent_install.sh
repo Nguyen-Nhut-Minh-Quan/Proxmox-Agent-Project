@@ -2,8 +2,8 @@
 
 echo "🚀 Starting Agent_For_Server Installation..."
 
-INSTALL_DIR="/opt/Proxmox-Agent"
-REPO_DIR="${pwd}/Proxmox-Agent-Project"
+INSTALL_DIR="/opt/Tank-Agent"
+REPO_DIR="/root/Tank-Agent-Project"
 
 # Ensure dependencies
 
@@ -75,21 +75,13 @@ else
 fi
 
 # Move only Agent_For_Server folder
-sudo mv "$REPO_DIR/Agent_For_Server" "$INSTALL_DIR"
+sudo mv "$REPO_DIR/Agent_For_Tank" "$INSTALL_DIR"
 
 # Compile C agent
 echo "🛠️ Compiling C agent..."
 cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
 
-# Make helper script executable
-if [ -f "VirtualServerStat.sh" ]; then
-  chmod +x VirtualServerStat.sh
-  echo "🔓 VirtualServerStat.sh made executable."
-else
-  echo "⚠️ VirtualServerStat.sh not found — skipping chmod."
-fi
-
-gcc -o proxmox_agent proxmox_agent.c -lcurl || {
+gcc tank_agent.c -o tank_agent -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || {
   echo "❌ Compilation failed."
   exit 1
 }
@@ -103,10 +95,10 @@ fi
 
 # Systemd setup
 echo "📦 Setting up systemd service units..."
-sudo cp "$REPO_DIR/systemd/proxmox_agent.service" /etc/systemd/system/
-sudo cp "$REPO_DIR/systemd/proxmox_agent.timer" /etc/systemd/system/
+sudo cp "$REPO_DIR/systemd/tank_agent.service" /etc/systemd/system/
+sudo cp "$REPO_DIR/systemd/tank_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable proxmox_agent.timer --now
+sudo systemctl enable tank_agent.timer --now
 sudo rm -rf "$REPO_DIR"
 
 echo "🎉 Installation complete! Agent is compiled, active, and scheduled via systemd."
