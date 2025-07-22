@@ -861,7 +861,7 @@ int main()
     if (client) mongoc_client_destroy(client);
     mongoc_cleanup(); // Clean up mongoc global state
     */
-    printf("WOW BABY\n");
+    printf("HHAHAHAHAHAHAH\n");
     printf("CHECK UPDATE BASH\n");
     // Free the strdup'd environment variables // Keep if mongo_client_ip is still part of Setenv and strdup'd
     free(physical_server_id);
