@@ -49,7 +49,7 @@ fi
 
 if ! dpkg -s libcurl4-openssl-dev &>/dev/null; then
   echo "📦 Installing libcurl development package..."
-  sudo sudo apt update && sudo apt install -y libcurl4-openssl-dev || {
+  sudo apt update && sudo apt install -y libcurl4-openssl-dev || {
     echo "❌ Failed to install libcurl headers. Aborting."
     exit 1
   }
