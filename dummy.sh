@@ -48,6 +48,12 @@ else
     echo "'sensors' is already installed."
 fi
 
+if ! command -v mpstat &> /dev/null; then
+    echo "'mpstat' not found. Installing sysstat..."
+    sudo apt update && sudo apt install -y sysstat
+else
+    echo "'mpstat' is already installed."
+fi
 if ! command -v gcc &>/dev/null; then
   echo "🧰 GCC compiler not found — installing build-essential..."
   sudo apt update && sudo apt install build-essential -y || {
