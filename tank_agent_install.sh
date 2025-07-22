@@ -3,7 +3,7 @@
 echo "🚀 Starting Agent_For_Server Installation..."
 
 INSTALL_DIR="/opt/Tank-Agent"
-REPO_DIR="${pwd}/Tank-Agent-Project"
+REPO_DIR="$(pwd)/Tank-Agent-Project"
 
 # Ensure dependencies
 
