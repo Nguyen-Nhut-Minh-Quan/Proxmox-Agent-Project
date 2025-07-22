@@ -3,9 +3,9 @@ Description=Sensor Reader C Program
 After=network.target network-online.target
 
 [Service]
-ExecStart=/opt/Proxmox-Agent/Agent_For_Server/proxmox_agent
-EnvironmentFile=/opt/Proxmox-Agent/Agent_For_Server/.env
-WorkingDirectory=/opt/Proxmox-Agent/Agent_For_Server
+ExecStart=/opt/Proxmox-Agent/proxmox_agent
+EnvironmentFile=/opt/Proxmox-Agent/.env
+WorkingDirectory=/opt/Proxmox-Agent/
 
 # Uncomment the lines below if needed
 #User=root
