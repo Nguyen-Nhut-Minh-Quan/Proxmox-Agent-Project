@@ -77,8 +77,8 @@ gcc -o proxmox_agent proxmox_agent.c -lcurl || {
 
 
 # Verify .env exists
-if [ ! -f ".proxmox_agent_env" ]; then
-  echo "❌ .proxmox_agent_env file is missing. Abort."
+if [ ! -f ".env" ]; then
+  echo "❌ .env file is missing. Abort."
   exit 1
 fi
 
