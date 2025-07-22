@@ -3,7 +3,7 @@ Description=Sensor Reader C Program
 After=network.target network-online.target
 
 [Service]
-ExecStart=/opt/Tank-Agent/proxmox_agent
+ExecStart=/opt/Tank-Agent/tank_agent
 EnvironmentFile=/opt/Tank-Agent/.env
 WorkingDirectory=/opt/Tank-Agent/
 
