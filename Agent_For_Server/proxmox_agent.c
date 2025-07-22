@@ -869,7 +869,5 @@ int main()
 
     // Clean up libcurl global state
     curl_global_cleanup();
-
-    printf("[DEBUG] Program completed\n");
     return EXIT_SUCCESS;
 }
