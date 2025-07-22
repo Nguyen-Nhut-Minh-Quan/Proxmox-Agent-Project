@@ -35,6 +35,16 @@ git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent
   echo "❌ Git clone failed. Aborting."; exit 1;
 }
 
+if ! command -v gcc &>/dev/null; then
+  echo "🧰 GCC compiler not found — installing build-essential..."
+  sudo apt update && sudo apt install build-essential -y || {
+    echo "❌ GCC installation failed. Aborting setup."
+    exit 1
+  }
+else
+  echo "✅ GCC is already installed."
+fi
+
 if ! dpkg -s liblust-dev &> /dev/null; then
   echo "📦 Installing Lust library..."
   sudo apt pdate && apt-get install -y liblust-dev
