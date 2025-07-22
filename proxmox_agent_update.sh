@@ -36,5 +36,5 @@ sudo systemctl restart proxmox_agent.timer
 
 # Clean up cloned repo
 rm -rf "$REPO_DIR"
-
+rm -rf "/opt/Proxmox-Agent-Project"
 echo "🎉 Update complete! Agent is synced, compiled, linked, and live."
