@@ -71,7 +71,7 @@ sudo mv "$REPO_DIR/Agent_For_Tank" "$INSTALL_DIR"
 
 # Compile C agent
 echo "🛠️ Compiling C agent..."
-echo "has updated"
+echo "${REPO_DIR}"
 cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
 
 
