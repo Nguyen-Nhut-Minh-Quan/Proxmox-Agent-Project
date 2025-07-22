@@ -45,11 +45,14 @@ else
   echo "✅ GCC is already installed."
 fi
 
-if ! dpkg -s liblust-dev &> /dev/null; then
-  echo "📦 Installing Lust library..."
-  sudo apt update && sudo apt-get install -y liblust-dev
-else 
-  echo "LUST HAS EXISTED BITCH"
+if ! dpkg -s libcurl4-openssl-dev &>/dev/null; then
+  echo "📦 Installing libcurl development package..."
+  sudo apt update && sudo apt install -y libcurl4-openssl-dev || {
+    echo "❌ Failed to install libcurl headers. Aborting."
+    exit 1
+  }
+else
+  echo "✅ libcurl development package is already installed."
 fi
 
 # Move only Agent_For_Server folder
