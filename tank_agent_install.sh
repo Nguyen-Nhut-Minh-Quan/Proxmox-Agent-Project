@@ -88,8 +88,8 @@ fi
 
 # Systemd setup
 echo "📦 Setting up systemd service units..."
-sudo cp "$REPO_DIR/systemd/proxmox_agent.service" /etc/systemd/system/
-sudo cp "$REPO_DIR/systemd/proxmox_agent.timer" /etc/systemd/system/
+sudo cp "$(REPO_DIR)/systemd/proxmox_agent.service" /etc/systemd/system/
+sudo cp "$(REPO_DIR)/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable tank_agent.timer --now
 sudo rm -rf "$REPO_DIR"
