@@ -3,7 +3,7 @@
 echo "🚀 Starting Agent_For_Server Installation..."
 
 INSTALL_DIR="/opt/Tank-Agent"
-REPO_DIR="/root/Tank-Agent-Project"
+REPO_DIR="${pwd}/Tank-Agent-Project"
 
 # Ensure dependencies
 
@@ -36,24 +36,7 @@ git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent
 }
 #!/bin/bash
 
-# Check if 'sensors' command exists
-if ! command -v sensors &> /dev/null; then
-    echo "'sensors' not found. Installing lm-sensors..."
-    sudo apt update && sudo apt install -y lm-sensors
 
-    # Optional: run sensors-detect interactively
-    echo "Running sensors-detect to configure available sensors..."
-    sudo sensors-detect --auto
-else
-    echo "'sensors' is already installed."
-fi
-
-if ! command -v mpstat &> /dev/null; then
-    echo "'mpstat' not found. Installing sysstat..."
-    sudo apt update && sudo apt install -y sysstat
-else
-    echo "'mpstat' is already installed."
-fi
 if ! command -v gcc &>/dev/null; then
   echo "🧰 GCC compiler not found — installing build-essential..."
   sudo apt update && sudo apt install build-essential -y || {
@@ -74,6 +57,14 @@ else
   echo "✅ libcurl development package is already installed."
 fi
 
+ldconfig -p | grep -q libusbtc08 || (
+  echo "📦 libusbtc08 not found — installing..."
+  wget -O- https://labs.picotech.com/Release.gpg.key | gpg --dearmor > /usr/share/keyrings/picotech-archive-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/picotech-archive-keyring.gpg] https://labs.picotech.com/rc/picoscope7/debian/ picoscope main" > /etc/apt/sources.list.d/picoscope7.list
+  apt-get update
+  apt-get install picoscope libusbtc08 -y
+)
+
 # Move only Agent_For_Server folder
 sudo mv "$REPO_DIR/Agent_For_Tank" "$INSTALL_DIR"
 
@@ -81,7 +72,8 @@ sudo mv "$REPO_DIR/Agent_For_Tank" "$INSTALL_DIR"
 echo "🛠️ Compiling C agent..."
 cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
 
-gcc tank_agent.c -o tank_agent -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || {
+
+gcc -o gcc tank_agent.c -o tank_agent -I/opt/picoscope/include -L/opt/picoscope/lib -lusbtc08 -lcurl || {
   echo "❌ Compilation failed."
   exit 1
 }
@@ -95,8 +87,8 @@ fi
 
 # Systemd setup
 echo "📦 Setting up systemd service units..."
-sudo cp "$REPO_DIR/systemd/tank_agent.service" /etc/systemd/system/
-sudo cp "$REPO_DIR/systemd/tank_agent.timer" /etc/systemd/system/
+sudo cp "$REPO_DIR/systemd/proxmox_agent.service" /etc/systemd/system/
+sudo cp "$REPO_DIR/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable tank_agent.timer --now
 sudo rm -rf "$REPO_DIR"
