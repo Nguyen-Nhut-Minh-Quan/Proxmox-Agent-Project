@@ -220,7 +220,7 @@ void insert_temperature_via_api(const char *core, float temp, const char *chip_n
                        "\"core\": \"%s\", "
                        "\"temperature_celsius\": %.1f, "
                        "\"adapter\": \"%s\", "
-                       "\"timestamp\": \"%s\"}",
+                       "\"Timestamp\": \"%s\"}",
                        tank_location,      // ADDED: TANK_LOCATION
                        tank_id,            // ADDED: TANK_ID
                        physical_server_id,
@@ -333,7 +333,7 @@ void insert_ram_usage_via_api() // Modified signature
                        "\"total_ram\": %d, "
                        "\"used_ram\": %d, "
                        "\"free_ram\": %d, "
-                       "\"timestamp\": \"%s\"}",
+                       "\"Timestamp\": \"%s\"}",
                        tank_location,
                        tank_id,
                        physical_server_id,
@@ -466,7 +466,7 @@ void insert_virtual_stats_via_api() // Modified signature
                                   "\"SERVER_NUM\": \"%s\", "
                                   "\"SERVER_VIRTUAL_NAME\": \"%s\", "
                                   "\"status\": \"%s\", "
-                                  "\"timestamp\": \"%s\"}",
+                                  "\"Timestamp\": \"%s\"}",
                                   tank_location,
                                   tank_id,
                                   physical_server_id,
@@ -525,7 +525,7 @@ void insert_disk_stats_via_api() // Modified signature
                                "\"used_bytes\": \"%s\", "
                                "\"available_bytes\": \"%s\", "
                                "\"percent_used\": \"%s\", "
-                               "\"timestamp\": \"%s\"}",
+                               "\"Timestamp\": \"%s\"}",
                                tank_location,
                                tank_id,
                                physical_server_id,
@@ -621,7 +621,7 @@ void insert_cpu_usage_via_api() // Modified signature
                        "\"cpu_percent_used\": %.2f, "
                        "\"logical_cores\": %d, "
                        "\"load_avarage\": \"%s\", " // Note: model has load_avarage, not load_average
-                       "\"timestamp\": \"%s\"}",
+                       "\"Timestamp\": \"%s\"}",
                        tank_location,
                        tank_id,
                        physical_server_id,
