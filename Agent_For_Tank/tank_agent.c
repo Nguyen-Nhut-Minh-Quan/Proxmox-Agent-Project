@@ -142,23 +142,24 @@ void send_tank_temperature_to_api() {
 
         char json_payload[512];
         char temp_str_L1[16], temp_str_L2[16], temp_str_L3[16];
-
+        char timestamp[100];
         // Direct access to temperat array, assuming it's populated correctly by TC-08.
         // This mirrors your working old code's behavior.
         snprintf(temp_str_L1, sizeof(temp_str_L1), "%.2f", temperat[base_channel_index + 0]);
         snprintf(temp_str_L2, sizeof(temp_str_L2), "%.2f", temperat[base_channel_index + 1]);
         snprintf(temp_str_L3, sizeof(temp_str_L3), "%.2f", temperat[base_channel_index + 2]);
-
+        get_iso_timestamp(timestamp,sizeof(timestamp));
         char tank_num_str[16];
         snprintf(tank_num_str, sizeof(tank_num_str), "%d", tank_idx + 1);
 
         int len = snprintf(json_payload, sizeof(json_payload),
-                           "{\"TANK_LOCATION\": \"%s\", \"TANK_NUM\": \"%s\", \"L1\": \"%s\", \"L2\": \"%s\", \"L3\": \"%s\"}",
+                           "{\"TANK_LOCATION\": \"%s\", \"TANK_NUM\": \"%s\", \"L1\": \"%s\", \"L2\": \"%s\", \"L3\": \"%s\" , \"Timestamp\": \"%s\"}",
                            tank_location,
                            tank_num_str,
                            temp_str_L1,
                            temp_str_L2,
-                           temp_str_L3);
+                           temp_str_L3,
+                            timestamp);
 
         if (len < 0 || len >= sizeof(json_payload)) {
             fprintf(stderr, "[ERROR] JSON payload for Tank %d too large or error occurred.\n", tank_idx + 1);
