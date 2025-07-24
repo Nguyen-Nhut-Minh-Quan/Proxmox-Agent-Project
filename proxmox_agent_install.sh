@@ -34,13 +34,6 @@ rm -rf "$REPO_DIR"
 git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_DIR" || {
   echo "❌ Git clone failed. Aborting."; exit 1;
 }
-#intialize git environment so git pull can be used later
-echo "git add remote"
-cd "$INSTALL_DIR"
-sudo git init 
-sudo git remote add origin https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git
-sudo git fetch origin
-sudo git checkout master
 #!/bin/bash
 
 # Check if 'sensors' command exists
@@ -84,6 +77,13 @@ fi
 # Move only Agent_For_Server folder
 sudo mv "$REPO_DIR/Agent_For_Server" "$INSTALL_DIR"
 
+#intialize git environment so git pull can be used later
+echo "git add remote"
+cd "$INSTALL_DIR"
+sudo git init 
+sudo git remote add origin https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git
+sudo git fetch origin
+sudo git checkout master
 # Compile C agent
 echo "🛠️ Compiling C agent..."
 cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
