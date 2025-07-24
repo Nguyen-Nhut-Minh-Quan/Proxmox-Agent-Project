@@ -84,6 +84,7 @@ sudo git init
 sudo git remote add origin https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git
 sudo git fetch origin
 sudo git checkout master
+
 # Compile C agent
 echo "🛠️ Compiling C agent..."
 cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
@@ -100,7 +101,14 @@ gcc -o proxmox_agent proxmox_agent.c -lcurl || {
   echo "❌ Compilation failed."
   exit 1
 }
-
+sudo rm -rf "Agent_For_Tank"
+sudo rm -rf "Agent_For_Server"
+sudo rm "dummy.sh"
+sudo rm "proxmox_agent.c"
+sudo rm "proxmox_agent_update.sh"
+sudo rm "tank_agent_install.sh"
+sudo rm "proxmox_agent_install.sh"
+sudo rm -rf "systemd"
 
 # Verify .env exists
 if [ ! -f ".env_example" ]; then
