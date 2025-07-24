@@ -1,57 +1,50 @@
 #!/bin/bash
 
+echo "🚀 Starting Proxmox-Agent Installation..."
+
 INSTALL_DIR="/opt/Proxmox-Agent"
-REPO_BRANCH="master"
+REPO_TEMP="${PWD}/Proxmox-Agent-Temp"
 
-echo "🔄 Starting Proxmox-Agent update..."
+# 1. Check Dependencies
+echo "🔍 Checking 'sudo' and 'git'..."
+command -v sudo >/dev/null || { echo "❌ sudo not found. Aborting."; exit 1; }
+command -v git >/dev/null || { echo "📦 Installing git..."; sudo apt update && sudo apt install -y git; }
 
-# Check if install dir is a git repo
-if [ ! -d "$INSTALL_DIR/.git" ]; then
-  echo "❌ ERROR: $INSTALL_DIR is not a valid Git repository."
-  echo "💡 Please reinstall using the updated install.sh script."
-  exit 1
-fi
+# 2. Clone only necessary folder
+echo "📁 Cloning Proxmox-Agent repo..."
+rm -rf "$REPO_TEMP"
+git clone --depth 1 --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_TEMP" || {
+  echo "❌ Git clone failed. Aborting."; exit 1;
+}
 
-cd "$INSTALL_DIR" || { echo "❌ Failed to access $INSTALL_DIR"; exit 1; }
+# 3. Move core files to /opt
+echo "📦 Installing to $INSTALL_DIR..."
+sudo rm -rf "$INSTALL_DIR"
+sudo mkdir -p "$INSTALL_DIR"
 
-# Backup .env if it exists
-if [ -f ".env" ]; then
-  echo "💾 Backing up .env file..."
-  cp .env /tmp/proxmox_env_backup
-fi
+sudo cp "$REPO_TEMP/Agent_For_Server/proxmox_agent" "$INSTALL_DIR/"
+sudo cp "$REPO_TEMP/Agent_For_Server/VirtualServerStat.sh" "$INSTALL_DIR/"
+sudo cp "$REPO_TEMP/Agent_For_Server/.env_example" "$INSTALL_DIR/"
+sudo chmod +x "$INSTALL_DIR/proxmox_agent"
+sudo chmod +x "$INSTALL_DIR/VirtualServerStat.sh"
 
-# Pull latest changes
-echo "🔁 Pulling latest updates from GitHub..."
-git fetch origin
-git reset --hard "origin/$REPO_BRANCH" || { echo "❌ Git reset failed. Abort."; exit 1; }
+# 4. Set up git repo inside /opt (linked to GitHub)
+echo "🔗 Initializing Git tracking for updates..."
+cd "$INSTALL_DIR"
+sudo git init
+sudo git remote add origin https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git
+sudo git fetch origin
+sudo git checkout master
 
-# Restore .env after reset
-if [ -f /tmp/proxmox_env_backup ]; then
-  echo "♻️ Restoring user .env file..."
-  mv /tmp/proxmox_env_backup .env
-fi
-
-# Rebuild the agent binary
-echo "🛠️ Recompiling proxmox_agent..."
-gcc -o proxmox_agent proxmox_agent.c -lcurl || { echo "❌ Compilation failed."; exit 1; }
-
-# Make script executable if present
-if [ -f "VirtualServerStat.sh" ]; then
-  chmod +x VirtualServerStat.sh
-  echo "🔓 VirtualServerStat.sh is executable."
-fi
-
-# Refresh systemd timer
-echo "🔁 Restarting systemd timer..."
+# 5. Set up systemd service + timer
+echo "🛠️ Configuring systemd..."
+sudo cp "$REPO_TEMP/systemd/proxmox_agent.service" /etc/systemd/system/
+sudo cp "$REPO_TEMP/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl restart proxmox_agent.timer
+sudo systemctl enable proxmox_agent.timer --now
 
-# Update global symlink
-sudo ln -sf "$INSTALL_DIR/proxmox_agent" /usr/local/bin/proxmox_agent
+# 6. Clean up clone repo and temp files
+echo "🧹 Cleaning up unnecessary files..."
+rm -rf "$REPO_TEMP"
 
-# Optional diff check with .env_example
-if ! diff -q .env .env_example &>/dev/null; then
-  echo "⚠️ .env and .env_example differ — consider updating missing variables."
-fi
-
-echo "🎉 Update complete! Agent is rebuilt, config preserved, and timer reloaded."
+echo "🎉 Installation complete! Agent is ready and tracked via Git."
