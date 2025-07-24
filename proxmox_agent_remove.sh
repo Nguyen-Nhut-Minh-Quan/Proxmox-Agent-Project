@@ -2,8 +2,8 @@
 
 echo "remove service...."
 
-SERVICE_NAME = "proxmox_agent.service"
-TIMER_NAME ="proxmox_agent.timer"
+SERVICE_NAME="proxmox_agent.service"
+TIMER_NAME="proxmox_agent.timer"
 
 sudo systemctl stop "$TIMER_NAME"
 sudo systemctl stop "$SERVICE_NAME"
