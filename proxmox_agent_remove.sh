@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "remove service...."
 
 SERVICE_NAME = "proxmox_agent.service"
