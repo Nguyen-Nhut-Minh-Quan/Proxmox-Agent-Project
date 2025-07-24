@@ -42,6 +42,7 @@ sudo systemctl enable proxmox_agent.timer --now
 
 # 6. Clean up clone repo and temp files
 echo "🧹 Cleaning up unnecessary files..."
+echo "This is update"
 rm -rf "$REPO_TEMP"
 
 echo "🎉 Installation complete! Agent is ready and tracked via Git."
