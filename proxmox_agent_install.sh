@@ -1,127 +1,48 @@
 #!/bin/bash
 
-echo "🚀 Starting Agent_For_Server Installation..."
+echo "🚀 Starting Proxmox-Agent Installation..."
 
 INSTALL_DIR="/opt/Proxmox-Agent"
-REPO_DIR="${pwd}/Proxmox-Agent-Project"
+REPO_TEMP="${PWD}/Proxmox-Agent-Temp"
 
-# Ensure dependencies
+# 1. Check Dependencies
+echo "🔍 Checking 'sudo' and 'git'..."
+command -v sudo >/dev/null || { echo "❌ sudo not found. Aborting."; exit 1; }
+command -v git >/dev/null || { echo "📦 Installing git..."; sudo apt update && sudo apt install -y git; }
 
-echo "🔍 Checking for 'sudo'..."
-if ! command -v sudo &>/dev/null; then
-  echo "🔧 'sudo' not found — installing..."
-  apt update && apt install sudo -y || {
-    echo "❌ Failed to install 'sudo'. Aborting."; exit 1;
-  }
-else
-  echo "✅ 'sudo' is already installed."
-fi
-
-echo "🔍 Checking for 'git'..."
-if ! command -v git &>/dev/null; then
-  echo "📦 Git not found — installing..."
-  sudo apt update && sudo apt install git -y || {
-    echo "❌ Failed to install 'git'. Aborting."; exit 1;
-  }
-else
-  echo "✅ 'git' is already installed."
-fi
-
-# Clean up and clone
-echo "📁 Fetching Agent_For_Server files..."
-sudo rm -rf "$INSTALL_DIR"
-rm -rf "$REPO_DIR"
-git clone --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_DIR" || {
+# 2. Clone only necessary folder
+echo "📁 Cloning Proxmox-Agent repo..."
+rm -rf "$REPO_TEMP"
+git clone --depth 1 --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_TEMP" || {
   echo "❌ Git clone failed. Aborting."; exit 1;
 }
-#!/bin/bash
 
-# Check if 'sensors' command exists
-if ! command -v sensors &> /dev/null; then
-    echo "'sensors' not found. Installing lm-sensors..."
-    sudo apt update && sudo apt install -y lm-sensors
+# 3. Move core files to /opt
+echo "📦 Installing to $INSTALL_DIR..."
+sudo rm -rf "$INSTALL_DIR"
+sudo mkdir -p "$INSTALL_DIR"
 
-    # Optional: run sensors-detect interactively
-    echo "Running sensors-detect to configure available sensors..."
-    sudo sensors-detect --auto
-else
-    echo "'sensors' is already installed."
-fi
+sudo cp "$REPO_TEMP/Agent_For_Server/proxmox_agent" "$INSTALL_DIR/"
+sudo cp "$REPO_TEMP/Agent_For_Server/VirtualServerStat.sh" "$INSTALL_DIR/"
+sudo cp "$REPO_TEMP/Agent_For_Server/.env_example" "$INSTALL_DIR/"
+sudo chmod +x "$INSTALL_DIR/proxmox_agent"
+sudo chmod +x "$INSTALL_DIR/VirtualServerStat.sh"
 
-if ! command -v mpstat &> /dev/null; then
-    echo "'mpstat' not found. Installing sysstat..."
-    sudo apt update && sudo apt install -y sysstat
-else
-    echo "'mpstat' is already installed."
-fi
-if ! command -v gcc &>/dev/null; then
-  echo "🧰 GCC compiler not found — installing build-essential..."
-  sudo apt update && sudo apt install build-essential -y || {
-    echo "❌ GCC installation failed. Aborting setup."
-    exit 1
-  }
-else
-  echo "✅ GCC is already installed."
-fi
-
-if ! dpkg -s libcurl4-openssl-dev &>/dev/null; then
-  echo "📦 Installing libcurl development package..."
-  sudo apt update && sudo apt install -y libcurl4-openssl-dev || {
-    echo "❌ Failed to install libcurl headers. Aborting."
-    exit 1
-  }
-else
-  echo "✅ libcurl development package is already installed."
-fi
-
-# Move only Agent_For_Server folder
-sudo mv "$REPO_DIR/Agent_For_Server" "$INSTALL_DIR"
-
-#intialize git environment so git pull can be used later
-echo "git add remote"
+# 4. Set up git repo inside /opt (linked to GitHub)
+echo "🔗 Initializing Git tracking for updates..."
 cd "$INSTALL_DIR"
-sudo git init 
+sudo git init
 sudo git remote add origin https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git
-sudo git fetch origin
-sudo git checkout master
-
-# Compile C agent
-echo "🛠️ Compiling C agent..."
-cd "$INSTALL_DIR" || { echo "❌ Couldn't enter $INSTALL_DIR"; exit 1; }
-
-# Make helper script executable
-if [ -f "VirtualServerStat.sh" ]; then
-  chmod +x VirtualServerStat.sh
-  echo "🔓 VirtualServerStat.sh made executable."
-else
-  echo "⚠️ VirtualServerStat.sh not found — skipping chmod."
-fi
-
-gcc -o proxmox_agent proxmox_agent.c -lcurl || {
-  echo "❌ Compilation failed."
-  exit 1
-}
-sudo rm -rf "Agent_For_Tank"
-sudo rm -rf "Agent_For_Server"
-sudo rm "dummy.sh"
-sudo rm "proxmox_agent.c"
-sudo rm "proxmox_agent_update.sh"
-sudo rm "tank_agent_install.sh"
-sudo rm "proxmox_agent_install.sh"
-sudo rm -rf "systemd"
-
-# Verify .env exists
-if [ ! -f ".env_example" ]; then
-  echo "❌ .env_example file is missing. Abort."
-  exit 1
-fi
-
-# Systemd setup
-echo "📦 Setting up systemd service units..."
-sudo cp "$REPO_DIR/systemd/proxmox_agent.service" /etc/systemd/system/
-sudo cp "$REPO_DIR/systemd/proxmox_agent.timer" /etc/systemd/system/
+# 5. Set up systemd service + timer
+echo "🛠️ Configuring systemd..."
+sudo cp "$REPO_TEMP/systemd/proxmox_agent.service" /etc/systemd/system/
+sudo cp "$REPO_TEMP/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable proxmox_agent.timer --now
-sudo rm -rf "$REPO_DIR"
 
-echo "🎉 Installation complete! Agent is compiled, active, and scheduled via systemd."
+# 6. Clean up clone repo and temp files
+echo "🧹 Cleaning up unnecessary files..."
+echo "This is update"
+rm -rf "$REPO_TEMP"
+
+echo "🎉 Installation complete! Agent is ready and tracked via Git."

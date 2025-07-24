@@ -1,40 +1,31 @@
 #!/bin/bash
 
+echo "🔄 Starting Proxmox-Agent update..."
+
 INSTALL_DIR="/opt/Proxmox-Agent"
-REPO_DIR="$(pwd)/Proxmox-Agent-Project"
-REPO_URL="https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git"
+TEMP_CLONE="/tmp/proxmox-agent-update-temp"
 
-echo "🔄 Updating Proxmox-Agent..."
-
-# Always re-clone fresh
-rm -rf "$REPO_DIR"
-git clone --branch master "$REPO_URL" "$REPO_DIR" || {
-  echo "❌ Git clone failed. Aborting."; exit 1;
+# 1. Clone fresh copy to temp directory
+echo "📥 Fetching latest version from GitHub..."
+rm -rf "$TEMP_CLONE"
+git clone --depth 1 --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$TEMP_CLONE" || {
+  echo "❌ Failed to clone repo. Aborting update."; exit 1;
 }
 
-# Move agent folder into install dir
-sudo rm -rf "$INSTALL_DIR"
-sudo mv "$REPO_DIR/Agent_For_Server" "$INSTALL_DIR"
+# 2. Copy updated files to install dir (excluding .env)
+echo "📦 Updating files (preserving .env)..."
+sudo cp "$TEMP_CLONE/Agent_For_Server/proxmox_agent" "$INSTALL_DIR/"
+sudo cp "$TEMP_CLONE/Agent_For_Server/VirtualServerStat.sh" "$INSTALL_DIR/"
+sudo cp "$TEMP_CLONE/Agent_For_Server/.env_example" "$INSTALL_DIR/"
 
-# Compile the agent binary
-echo "🛠️ Building proxmox_agent..."
-cd "$INSTALL_DIR" || { echo "❌ Install dir missing. Abort."; exit 1; }
-gcc -o proxmox_agent proxmox_agent.c -lcurl || {
-  echo "❌ Compilation failed."; exit 1;
-}
-
-# Add build timestamp check
-echo "✅ Build complete. Binary timestamp: $(date)"
-
-# Create global symlink so one-liners always use latest binary
-sudo ln -sf "$INSTALL_DIR/proxmox_agent" /usr/local/bin/proxmox_agent
-
-# Reload and restart systemd units
-echo "🔁 Restarting systemd timer..."
+# 3. Refresh systemd files if changed
+echo "🔧 Updating systemd service and timer..."
+sudo cp "$TEMP_CLONE/systemd/proxmox_agent.service" /etc/systemd/system/
+sudo cp "$TEMP_CLONE/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl restart proxmox_agent.timer
 
-# Clean up cloned repo
-rm -rf "$REPO_DIR"
-rm -rf "/opt/Proxmox-Agent-Project"
-echo "🎉 Update complete! Agent is synced, compiled, linked, and live."
+# 4. Clean up temp folder
+echo "🧹 Cleaning up temporary files..."
+rm -rf "$TEMP_CLONE"
+
+echo "✅ Update complete! Your .env file remains untouched."
