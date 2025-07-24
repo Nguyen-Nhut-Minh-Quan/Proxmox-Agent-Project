@@ -81,7 +81,7 @@ sudo gcc tank_agent.c -o tank_agent -I/opt/picoscope/include -L/opt/picoscope/li
 
 
 # Verify .env exists
-if [ ! -f ".env" ]; then
+if [ ! -f ".env_example" ]; then
   echo "❌ .env file is missing. Abort."
   exit 1
 fi
