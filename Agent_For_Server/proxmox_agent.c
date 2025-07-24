@@ -822,7 +822,7 @@ void Setenv() {
 
 int main()
 {
-    printf("[DEBUG] Initializing C Agent\n");
+    printf("HELOOOOOOOOOOOOOOOOOOOOOOOOOOO BROOOOOOOOOOOOOOOOOOOOOOOO\n");
     // Initialize libcurl global state
     curl_global_init(CURL_GLOBAL_DEFAULT);
     // mongoc_init(); // REMOVED: No longer needed as mongoc is not used directly
