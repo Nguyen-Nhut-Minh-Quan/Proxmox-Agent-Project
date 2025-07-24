@@ -1,5 +1,7 @@
 #!/bin/bash
+
 echo "🚀 Starting Proxmox-Agent Installation..."
+
 INSTALL_DIR="/opt/Proxmox-Agent"
 REPO_TEMP="${PWD}/Proxmox-Agent-Temp"
 
