@@ -33,9 +33,6 @@ echo "🔗 Initializing Git tracking for updates..."
 cd "$INSTALL_DIR"
 sudo git init
 sudo git remote add origin https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git
-sudo git fetch origin
-sudo git checkout master
-
 # 5. Set up systemd service + timer
 echo "🛠️ Configuring systemd..."
 sudo cp "$REPO_TEMP/systemd/proxmox_agent.service" /etc/systemd/system/
