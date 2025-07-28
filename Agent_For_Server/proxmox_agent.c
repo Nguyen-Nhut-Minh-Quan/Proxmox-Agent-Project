@@ -16,15 +16,15 @@ char *mongo_client_ip = NULL; // Can be REMOVED if no direct MongoDB operations 
 char *physical_server_id = NULL;
 char *tank_id = NULL;
 char *fastapi_base_url = NULL; // NEW: Base URL for your FastAPI server
-
+char timestamp[64];
 // gcc -g -o test test.c $(pkg-config --cflags --libs libmongoc-1.0) -lcurl
 
 // --- Utility Functions ---
 
-void get_iso_timestamp(char *buffer, size_t size)
+void get_iso_timestamp()
 {
     time_t now = time(NULL);
-    strftime(buffer, size, "%Y-%m-%dT%H:%M:%SZ", gmtime(&now));
+    strftime(timestamp, 64, "%Y-%m-%dT%H:%M:%SZ", gmtime(&now));
 }
 
 // Structure to hold the parsed sensor data (used by parse_sensors_output)
@@ -209,8 +209,6 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
 void insert_temperature_via_api(const char *core, float temp, const char *chip_name)
 {
     printf("[DEBUG] Preparing temperature data for API\n");
-    char timestamp[64];
-    get_iso_timestamp(timestamp, sizeof(timestamp));
 
     char json_payload[512]; 
     int len = snprintf(json_payload, sizeof(json_payload),
@@ -321,9 +319,6 @@ void insert_ram_usage_via_api() // Modified signature
         return;
     }
     pclose(fp);
-
-    char timestamp[64];
-    get_iso_timestamp(timestamp, sizeof(timestamp));
     
     char json_payload[512];
     int len = snprintf(json_payload, sizeof(json_payload),
@@ -388,9 +383,6 @@ void insert_virtual_stats_via_api() // Modified signature
             percent = 0.0;
             numCores = 0;
         }
-
-        char timestamp[64];
-        get_iso_timestamp(timestamp, sizeof(timestamp));
 
         // --- CPU Virtual ---
         char cpu_json[512];
@@ -496,8 +488,6 @@ void insert_disk_stats_via_api() // Modified signature
     }
 
     char line[512];
-    char timestamp[64];
-    get_iso_timestamp(timestamp, sizeof(timestamp));
     int count = 0;
     fgets(line, sizeof(line), fp); // Read header line
     while (fgets(line, sizeof(line), fp))
@@ -563,9 +553,6 @@ void insert_disk_stats_via_api() // Modified signature
 void insert_cpu_usage_via_api() // Modified signature
 {
     printf("[DEBUG] Starting insert_cpu_usage\n");
-
-    char timestamp[64];
-    get_iso_timestamp(timestamp, sizeof(timestamp));
 
     // Step 1: Get number of cores
     FILE *core_fp = popen("nproc", "r");
@@ -822,8 +809,9 @@ void Setenv() {
 
 int main()
 {
-    printf("HELOOOOOOOOOOOOOOOOOOOOOOOOOOO BROOOOOOOOOOOOOOOOOOOOOOOO\n");
+    printf("C file has been updated\n");
     // Initialize libcurl global state
+    get_iso_timestamp();
     curl_global_init(CURL_GLOBAL_DEFAULT);
     // mongoc_init(); // REMOVED: No longer needed as mongoc is not used directly
 
