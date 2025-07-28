@@ -390,12 +390,14 @@ void insert_virtual_stats_via_api() // Modified signature
                                "{\"TANK_LOCATION\": \"%s\", "
                                "\"TANK_NUM\": \"%s\", "
                                "\"SERVER_NUM\": \"%s\", "
+                               "\"SERVER_VIRTUAL_NAME\": \"%s\", "
                                "\"CPU_USAGE\": \"%.1f%%\", " // Keep as string with %% if API expects it
                                "\"NUM_CORES\": %d, "
                                "\"Timestamp\": \"%s\"}",
                                tank_location,
                                tank_id, // TANK_NUM maps to tank_id
                                physical_server_id,
+                               Name,
                                percent,
                                numCores,
                                timestamp);
