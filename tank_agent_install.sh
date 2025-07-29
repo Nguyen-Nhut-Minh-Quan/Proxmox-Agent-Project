@@ -3,7 +3,7 @@ echo "🚀 Starting Tank-Agent Installation..."
 INSTALL_DIR="/opt/Tank-Agent"
 REPO_TEMP="$(pwd)/Tank-Agent-Temp"
 # 1. Check Dependencies
-echo "🔍 Checking 'sudo' and 'git'..."
+echo "🔍 Checking sudo and git..."
 command -v sudo >/dev/null || { echo "❌ sudo not found. Aborting."; exit 1; }
 command -v git >/dev/null || { echo "📦 Installing git..."; sudo apt update && sudo apt install -y git; }
 # 2. Clone only necessary folder
