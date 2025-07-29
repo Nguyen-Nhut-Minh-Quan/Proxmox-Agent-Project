@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "🚀 Starting Tank-Agent Installation..."
 INSTALL_DIR="/opt/Tank-Agent"
-REPO_TEMP="${pwd}/Tank-Agent-Temp"
+REPO_TEMP="$(pwd)/Tank-Agent-Temp"
 # 1. Check Dependencies
 echo "🔍 Checking 'sudo' and 'git'..."
 command -v sudo >/dev/null || { echo "❌ sudo not found. Aborting."; exit 1; }
