@@ -22,8 +22,8 @@ echo "📦 Installing to $INSTALL_DIR..."
 sudo rm -rf "$INSTALL_DIR"
 sudo mkdir -p "$INSTALL_DIR"
 
-sudo cp "$REPO_TEMP/Agent_For_Server/tank_agent" "$INSTALL_DIR/"
-sudo cp "$REPO_TEMP/Agent_For_Server/.env_example" "$INSTALL_DIR/"
+sudo cp "$REPO_TEMP/Agent_For_Tank/tank_agent" "$INSTALL_DIR/"
+sudo cp "$REPO_TEMP/Agent_For_Tank/.env_example" "$INSTALL_DIR/"
 sudo chmod +x "$INSTALL_DIR/tank_agent"
 
 # 4. Set up git repo inside /opt (linked to GitHub)
