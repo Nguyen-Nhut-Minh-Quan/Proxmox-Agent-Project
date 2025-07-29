@@ -3,13 +3,13 @@ echo "🚀 Starting Tank-Agent Installation..."
 INSTALL_DIR="/opt/Tank-Agent"
 REPO_TEMP="$(pwd)/Tank-Agent-Temp"
 # 1. Check Dependencies
-echo "🔍 Checking 'sudo' and 'git'..."
+echo "🔍 Checking sudo and git..."
 command -v sudo >/dev/null || { echo "❌ sudo not found. Aborting."; exit 1; }
 command -v git >/dev/null || {echo "📦 Installing git...";sudo apt update && sudo apt install -y git;}
 # 2. Clone only necessary folder
 echo "📁 Cloning Tank-Agent repo..."
 rm -rf "$REPO_TEMP"
-git clone --depth 1 --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_TEMP" || {echo "❌ Git clone failed. Aborting."exit 1;}
+git clone --depth 1 --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Proxmox-Agent-Project.git "$REPO_TEMP" || {echo "❌ Git clone failed. Aborting.";exit 1;}
 # 3. Move core files to /opt
 echo "📦 Installing to $INSTALL_DIR..."
 sudo rm -rf "$INSTALL_DIR"
