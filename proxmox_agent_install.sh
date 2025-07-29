@@ -3,7 +3,7 @@
 echo "🚀 Starting Proxmox-Agent Installation..."
 
 INSTALL_DIR="/opt/Proxmox-Agent"
-REPO_TEMP="${PWD}/Proxmox-Agent-Temp"
+REPO_TEMP="${pwd}/Proxmox-Agent-Temp"
 
 # 1. Check Dependencies
 echo "🔍 Checking 'sudo' and 'git'..."
