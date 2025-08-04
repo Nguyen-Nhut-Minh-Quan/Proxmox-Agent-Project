@@ -16,6 +16,7 @@ git clone --depth 1 --branch master https://github.com/Nguyen-Nhut-Minh-Quan/Pro
 echo "📦 Updating files (preserving .env)..."
 sudo cp "$TEMP_CLONE/Agent_For_Server/proxmox_agent" "$INSTALL_DIR/"
 sudo cp "$TEMP_CLONE/Agent_For_Server/VirtualServerStat.sh" "$INSTALL_DIR/"
+sudo chmod +x "$INSTALL_DIR/VirtualServerStat.sh"
 sudo cp "$TEMP_CLONE/Agent_For_Server/.env_example" "$INSTALL_DIR/"
 
 # 3. Refresh systemd files if changed
