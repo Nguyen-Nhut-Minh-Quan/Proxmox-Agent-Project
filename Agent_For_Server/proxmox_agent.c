@@ -368,7 +368,7 @@ void insert_virtual_stats_via_api() // Modified signature
         char Disk[50];
         
         int match = sscanf(line, "%51s %19s %49s %49s %49s", Name, Status, CPU, Ram, Disk);
-        if (match != 5)
+        if (match != 5 )
         {
             printf("[WARN] Some Data point from VirtualServerStat.sh does not match format in line: %s", line);
             continue; // Skip this line and try next
