@@ -4,7 +4,38 @@ echo "🔄 Starting Proxmox-Agent update..."
 
 INSTALL_DIR="/opt/Proxmox-Agent"
 TEMP_CLONE="/tmp/proxmox-agent-update-temp"
+check_and_install() {
+    local command_name=$1
+    local package_name=$2
 
+    if ! command -v "$command_name" &> /dev/null
+    then
+        echo "[INFO] '$command_name' not found. Installing package '$package_name'..."
+        sudo apt-get update
+        sudo apt-get install -y "$package_name"
+    else
+        echo "[INFO] '$command_name' is already installed."
+    fi
+}
+
+# Check for `pvesm` (Proxmox-specific command)
+if ! command -v pvesm &> /dev/null
+then
+    echo "[WARN] 'pvesm' command not found. This script should be run on a Proxmox host."
+else
+    echo "[INFO] 'pvesm' is installed (Proxmox host confirmed)."
+fi
+
+# Check for other monitoring tools
+check_and_install "mpstat" "sysstat"
+check_and_install "free" "procps"
+check_and_install "uptime" "procps"
+check_and_install "nproc" "coreutils"
+check_and_install "ip" "iproute2"
+check_and_install "sensors" "lm-sensors"
+check_and_install "awk" "gawk"
+check_and_install "grep" "grep"
+check_and_install "jq" "jq"
 # 1. Clone fresh copy to temp directory
 echo "📥 Fetching latest version from GitHub..."
 rm -rf "$TEMP_CLONE"

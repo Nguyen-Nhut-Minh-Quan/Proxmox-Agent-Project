@@ -63,6 +63,7 @@ check_and_install "ip" "iproute2"
 check_and_install "sensors" "lm-sensors"
 check_and_install "awk" "gawk"
 check_and_install "grep" "grep"
+check_and_install "jq" "jq"
 
 echo "--- All dependency checks complete ---"
 
