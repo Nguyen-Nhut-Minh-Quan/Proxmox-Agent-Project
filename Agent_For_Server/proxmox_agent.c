@@ -189,9 +189,9 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code < 200 || http_code >= 300) { // Check for non-2xx status codes
-                fprintf(stderr, "[WARN] API call to %s returned HTTP %ld. Payload: %s\n", url, http_code, json_payload);
+                fprintf(stderr, "[WARN] haha to %s returned HTTP %ld. Payload: %s\n", url, http_code, json_payload);
             } else {
-                printf("[DEBUG] API call to %s successful (HTTP %ld)\n", url, http_code);
+                printf("[DEBUG] haha to %s successful (HTTP %ld)\n", url, http_code);
             }
         }
 
