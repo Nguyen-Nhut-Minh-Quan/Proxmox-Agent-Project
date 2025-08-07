@@ -3,7 +3,7 @@
 hostname=$(hostname)
 
 # Print the header
-printf "%-15s %-10s %-25s %-25s %-10s\n" "VM Name" "Status" "CPU (used/cores)" "RAM (used/total GB)" "Disk (GB)"
+printf "%-15s %-10s %-25s %-25s %-20s\n" "VM Name" "Status" "CPU (used/cores)" "RAM (used/total GB)" "Disk (used/total GB)"
 
 # Loop through each VM
 qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
@@ -37,17 +37,22 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
 
             # RAM usage
             if [[ "$MEM" != "null" && "$MAXMEM" != "null" && "$MAXMEM" != "0" ]]; then
-                USED_GB=$(awk "BEGIN {printf \"%.2f\", $MEM / (1024*1024*1024)}")
-                TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $MAXMEM / (1024*1024*1024)}")
+                USED_GB=$(awk "BEGIN {printf \"%.2f\", $MEM / (1000*1000*1000)}")
+                TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $MAXMEM / (1000*1000*1000)}")
                 RAM_STR="${USED_GB}/${TOTAL_GB}"
             else
                 RAM_STR="?"
             fi
 
-            # Disk size
-            if [[ "$MAXDISK" != "null" && "$MAXDISK" != "0" ]]; then
-                DISK_GB=$(awk "BEGIN {printf \"%.2f\", $MAXDISK / (1024*1024*1024)}")
-                DISK_STR="$DISK_GB"
+            # Disk usage from status API
+            STATUS_JSON=$(pvesh get /nodes/$hostname/qemu/$VMID/status/current --output-format json 2>/dev/null)
+            DISK_USED=$(echo "$STATUS_JSON" | jq '.disk')
+            DISK_TOTAL=$(echo "$STATUS_JSON" | jq '.maxdisk')
+
+            if [[ "$DISK_USED" != "null" && "$DISK_TOTAL" != "null" && "$DISK_TOTAL" != "0" ]]; then
+                DISK_USED_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_USED / (1000*1000*1000)}")
+                DISK_TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_TOTAL / (1000*1000*1000)}")
+                DISK_STR="${DISK_USED_GB}/${DISK_TOTAL_GB}"
             else
                 DISK_STR="?"
             fi
@@ -55,5 +60,5 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
     fi
 
     # Output final row
-    printf "%-15s %-10s %-25s %-25s %-10s\n" "$NAME" "$STATUS" "$CPU_STR" "$RAM_STR" "$DISK_STR"
+    printf "%-15s %-10s %-25s %-25s %-20s\n" "$NAME" "$STATUS" "$CPU_STR" "$RAM_STR" "$DISK_STR"
 done
