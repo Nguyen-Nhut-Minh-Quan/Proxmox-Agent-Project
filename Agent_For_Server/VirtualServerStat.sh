@@ -40,8 +40,8 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
 
             # RAM usage
             if [[ "$MEM" != "null" && "$MAXMEM" != "null" && "$MAXMEM" != "0" ]]; then
-                USED_GB=$(awk "BEGIN {printf \"%.2f\", $MEM / (1000*1000*1000)}")
-                TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $MAXMEM / (1000*1000*1000)}")
+                USED_GB=$(awk "BEGIN {printf \"%.2f\", $MEM / (1024*1024*1024)}")
+                TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $MAXMEM / (1024*1024*1024)}")
                 RAM_STR="${USED_GB}/${TOTAL_GB}"
             else
                 RAM_STR="?"
@@ -53,8 +53,8 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
             DISK_TOTAL=$(echo "$STATUS_JSON" | jq '.maxdisk')
 
             if [[ "$DISK_USED" != "null" && "$DISK_TOTAL" != "null" && "$DISK_TOTAL" != "0" ]]; then
-                DISK_USED_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_USED / (1000*1000*1000)}")
-                DISK_TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_TOTAL / (1000*1000*1000)}")
+                DISK_USED_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_USED / (1024*1024*1024)}")
+                DISK_TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_TOTAL / (1024*1024*1024)}")
                 DISK_STR="${DISK_USED_GB}/${DISK_TOTAL_GB}"
             else
                 DISK_STR="?"
