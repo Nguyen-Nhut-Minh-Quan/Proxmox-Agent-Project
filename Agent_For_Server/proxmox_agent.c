@@ -361,14 +361,13 @@ void insert_virtual_stats_via_api() // Modified signature
     fgets(line, sizeof(line), fp); // Read header line
     while (fgets(line, sizeof(line), fp))
     {
-        char VMID[20];
         char Name[52];
         char Status[20];
         char CPU[50];
         char Ram[50];
         char Disk[50];
         
-        int match = sscanf(line, "%19s %51s %19s %49s %49s %49s", VMID, Name, Status, CPU, Ram, Disk);
+        int match = sscanf(line, "%19s %51s %19s %49s %49s %49s", Name, Status, CPU, Ram, Disk);
         if (match != 6)
         {
             printf("[WARN] Some Data point from VirtualServerStat.sh does not match format in line: %s", line);
@@ -379,7 +378,7 @@ void insert_virtual_stats_via_api() // Modified signature
         int numCores;
         // Parse CPU string (e.g., "25.7%/4")
         if (sscanf(CPU, "%f/%d", &percent, &numCores) != 2) {
-            printf("[WARN] Failed to parse CPU string '%s' for VMID %s\n", CPU, VMID);
+            printf("[WARN] Failed to parse CPU string '%s' for VM %s\n", CPU, Name);
             percent = 0.0;
             numCores = 0;
         }

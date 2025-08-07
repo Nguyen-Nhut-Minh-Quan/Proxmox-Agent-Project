@@ -1,50 +1,59 @@
 #!/bin/bash
-# Header
-printf "%-6s %-25s %-10s %-20s %-20s %-25s\n" \
-"VMID" "Name" "Status" "CPU (used/cores)" "RAM (used/total MB)" "Disk (used/total GB)"
 
-# Loop over all VMs
-while read -r vmid name status mem_alloc disk_alloc pid; do
+hostname=$(hostname)
 
-  # Get VM config
-  config=$(qm config "$vmid")
+# Print the header
+printf "%-15s %-10s %-25s %-25s %-10s\n" "VM Name" "Status" "CPU (used/cores)" "RAM (used/total GB)" "Disk (GB)"
 
-  # Get vCPU count (default 1 if missing)
-  cpu_total=$(echo "$config" | grep -Po '^cores:\s*\K\d+' || echo 1)
+# Loop through each VM
+qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
+    # Try to fetch RRD data from pvesh
+    RRD_JSON=$(pvesh get /nodes/$hostname/qemu/$VMID/rrddata --timeframe hour --cf AVERAGE --output-format json 2>/dev/null)
 
-  # Get RAM total from config (fallback to mem_alloc)
-  ram_total=$(echo "$config" | grep -Po '^memory:\s*\K\d+')
-  ram_total=${ram_total:-$mem_alloc}
-  
-  # Get PID if running
-  if [[ "$status" == "running" && "$pid" != "0" ]]; then
-    cpu_used=$(ps -p "$pid" -o %cpu= | awk '{printf "%.2f", $1}')
-    ram_used=$(ps -p "$pid" -o rss= | awk '{printf "%d", $1 / 1024}')
+    # Check if valid JSON by trying to parse with jq
+    if ! echo "$RRD_JSON" | jq empty >/dev/null 2>&1; then
+        CPU_STR="?"; RAM_STR="?"; DISK_STR="?"
+    else
+        # Safely get the latest non-null entry
+        LATEST=$(echo "$RRD_JSON" | jq 'reverse | map(select(.cpu != null)) | .[0]')
 
-    # Cap RAM used to RAM total
-    if (( ram_used > ram_total )); then
-      ram_used=$ram_total
+        # If no valid data
+        if [[ "$LATEST" == "null" || -z "$LATEST" ]]; then
+            CPU_STR="?"; RAM_STR="?"; DISK_STR="?"
+        else
+            CPU=$(echo "$LATEST" | jq '.cpu')
+            MAXCPU=$(echo "$LATEST" | jq '.maxcpu')
+            MEM=$(echo "$LATEST" | jq '.mem')
+            MAXMEM=$(echo "$LATEST" | jq '.maxmem')
+            MAXDISK=$(echo "$LATEST" | jq '.maxdisk')
+
+            # CPU usage
+            if [[ "$CPU" != "null" && "$MAXCPU" != "null" && "$MAXCPU" != "0" ]]; then
+                CPU_PCT=$(awk "BEGIN {printf \"%.2f\", $CPU * 100}")
+                CPU_STR="$CPU_PCT/$MAXCPU"
+            else
+                CPU_STR="?"
+            fi
+
+            # RAM usage
+            if [[ "$MEM" != "null" && "$MAXMEM" != "null" && "$MAXMEM" != "0" ]]; then
+                USED_GB=$(awk "BEGIN {printf \"%.2f\", $MEM / (1000*1000*1000)}")
+                TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $MAXMEM / (1000*1000*1000)}")
+                RAM_STR="${USED_GB}/${TOTAL_GB}"
+            else
+                RAM_STR="?"
+            fi
+
+            # Disk size
+            if [[ "$MAXDISK" != "null" && "$MAXDISK" != "0" ]]; then
+                DISK_GB=$(awk "BEGIN {printf \"%.2f\", $MAXDISK / (1000*1000*1000)}")
+                DISK_STR="$DISK_GB"
+            else
+                DISK_STR="?"
+            fi
+        fi
     fi
-  else
-    cpu_used="0.00"
-    ram_used="0"
-  fi
 
-  # Get LVM disk usage
-  lv_name="vm-${vmid}-disk-0"
-  lv_info=$(lvs --units g --noheadings -o lv_name,data_percent,lv_size | grep "$lv_name")
-  if [[ -n "$lv_info" ]]; then
-    data_pct=$(echo "$lv_info" | awk '{print $2}')
-    total_size=$(echo "$lv_info" | awk '{print $3}' | sed 's/g//')
-    disk_used=$(awk -v p="$data_pct" -v s="$total_size" 'BEGIN { printf "%.2f", (p / 100) * s }')
-  else
-    disk_used="0.00"
-    total_size="$disk_alloc"
-  fi
-
-  # Print info row
-  printf "%-6s %-25s %-10s %-20s %-20s %-25s\n" \
-    "$vmid" "$name" "$status" \
-    "$cpu_used/$cpu_total" "$ram_used/$ram_total" "$disk_used/$total_size"
-
-done < <(qm list | awk 'NR>1 {printf "%s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6}')
+    # Output final row
+    printf "%-15s %-10s %-25s %-25s %-10s\n" "$NAME" "$STATUS" "$CPU_STR" "$RAM_STR" "$DISK_STR"
+done
