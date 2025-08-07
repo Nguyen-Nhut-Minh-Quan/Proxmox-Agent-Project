@@ -23,7 +23,7 @@ sudo cp "$TEMP_CLONE/Agent_For_Server/.env_example" "$INSTALL_DIR/"
 echo "🔧 Updating systemd service and timer..."
 sudo cp "$TEMP_CLONE/systemd/proxmox_agent.service" /etc/systemd/system/
 sudo cp "$TEMP_CLONE/systemd/proxmox_agent.timer" /etc/systemd/system/
-sudo systemctl daemon-reload
+sudo systemctl restart proxmox_agent.service
 
 # 4. Clean up temp folder
 echo "🧹 Cleaning up temporary files..."
