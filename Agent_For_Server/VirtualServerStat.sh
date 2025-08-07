@@ -5,19 +5,23 @@ hostname=$(hostname)
 # Print the header
 printf "%-15s %-10s %-25s %-25s %-20s\n" "VM Name" "Status" "CPU (used/cores)" "RAM (used/total GB)" "Disk (used/total GB)"
 
-# Loop through each VM
+# Loop through each VM (VMID, Name, Status)
 qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
+    # Skip templates
+    if qm config "$VMID" | grep -q "^template: 1"; then
+        continue
+    fi
+
     # Try to fetch RRD data from pvesh
     RRD_JSON=$(pvesh get /nodes/$hostname/qemu/$VMID/rrddata --timeframe hour --cf AVERAGE --output-format json 2>/dev/null)
 
-    # Check if valid JSON by trying to parse with jq
+    # Check if valid JSON
     if ! echo "$RRD_JSON" | jq empty >/dev/null 2>&1; then
         CPU_STR="?"; RAM_STR="?"; DISK_STR="?"
     else
-        # Safely get the latest non-null entry
+        # Get the latest valid entry with CPU data
         LATEST=$(echo "$RRD_JSON" | jq 'reverse | map(select(.cpu != null)) | .[0]')
 
-        # If no valid data
         if [[ "$LATEST" == "null" || -z "$LATEST" ]]; then
             CPU_STR="?"; RAM_STR="?"; DISK_STR="?"
         else
@@ -25,7 +29,6 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
             MAXCPU=$(echo "$LATEST" | jq '.maxcpu')
             MEM=$(echo "$LATEST" | jq '.mem')
             MAXMEM=$(echo "$LATEST" | jq '.maxmem')
-            MAXDISK=$(echo "$LATEST" | jq '.maxdisk')
 
             # CPU usage
             if [[ "$CPU" != "null" && "$MAXCPU" != "null" && "$MAXCPU" != "0" ]]; then
@@ -44,7 +47,7 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
                 RAM_STR="?"
             fi
 
-            # Disk usage from status API
+            # Disk usage (from status API)
             STATUS_JSON=$(pvesh get /nodes/$hostname/qemu/$VMID/status/current --output-format json 2>/dev/null)
             DISK_USED=$(echo "$STATUS_JSON" | jq '.disk')
             DISK_TOTAL=$(echo "$STATUS_JSON" | jq '.maxdisk')
@@ -59,6 +62,6 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
         fi
     fi
 
-    # Output final row
+    # Print the final row
     printf "%-15s %-10s %-25s %-25s %-20s\n" "$NAME" "$STATUS" "$CPU_STR" "$RAM_STR" "$DISK_STR"
 done
