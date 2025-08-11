@@ -206,40 +206,7 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
 
 // --- Data Insertion Functions (Calling FastAPI APIs) ---
 
-void insert_temperature_via_api(const char *core, float temp, const char *chip_name)
-{
-    printf("[DEBUG] Preparing temperature data for API\n");
-
-    char json_payload[512]; 
-    int len = snprintf(json_payload, sizeof(json_payload),
-                       "{\"TANK_LOCATION\": \"%s\", "
-                       "\"TANK_ID\": \"%s\", "
-                       "\"SERVER_ID\": \"%s\", "
-                       "\"core\": \"%s\", "
-                       "\"temperature_celsius\": %.1f, "
-                       "\"adapter\": \"%s\", "
-                       "\"Timestamp\": \"%s\"}",
-                       tank_location,      // ADDED: TANK_LOCATION
-                       tank_id,            // ADDED: TANK_ID
-                       physical_server_id,
-                       core,
-                       temp,
-                       chip_name,
-                       timestamp);
-
-    if (len < 0 || len >= sizeof(json_payload)) {
-        fprintf(stderr, "[ERROR] JSON payload for temperature too large or error occurred.\n");
-        return;
-    }
-
-    char url_buffer[256];
-    snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/temperature/", fastapi_base_url);
-
-    printf("[DEBUG] Sending temperature JSON to %s\n", url_buffer);
-    post_json_to_api(url_buffer, json_payload);
-}
-
-void insert_temperatures() // No collection parameter anymore
+void insert_temperatures()
 {
     printf("[DEBUG] Starting insert_temperatures\n");
     FILE *fp = popen("sensors", "r");
@@ -264,6 +231,14 @@ void insert_temperatures() // No collection parameter anymore
         pclose(fp);
         return;
     }
+
+    // Buffer for the full JSON array
+    char json_payload[4096];
+    size_t offset = 0;
+
+    offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, "[");
+
+    int first_entry = 1;
 
     while (fgets(line, sizeof(line), fp))
     {
@@ -291,14 +266,44 @@ void insert_temperatures() // No collection parameter anymore
 
             printf("[DEBUG] Parsed temperature: %s - Core %s => %.1f°C\n", current_chip, core, temp);
 
-            insert_temperature_via_api(core, temp, current_chip);
+            if (!first_entry)
+            {
+                offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, ",");
+            }
+            first_entry = 0;
+
+            offset += snprintf(json_payload + offset, sizeof(json_payload) - offset,
+                               "{\"TANK_LOCATION\":\"%s\","
+                               "\"TANK_ID\":\"%s\","
+                               "\"SERVER_ID\":\"%s\","
+                               "\"core\":\"%s\","
+                               "\"temperature_celsius\":%.1f,"
+                               "\"adapter\":\"%s\","
+                               "\"Timestamp\":\"%s\"}",
+                               tank_location,
+                               tank_id,
+                               physical_server_id,
+                               core,
+                               temp,
+                               current_chip,
+                               timestamp);
         }
     }
+
+    offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, "]");
+
+    // Send the array in one request
+    char url_buffer[256];
+    snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/temperature/", fastapi_base_url);
+    printf("[DEBUG] Sending batched temperature JSON to %s\n", url_buffer);
+    post_json_to_api(url_buffer, json_payload);
+
     regfree(&chip_regex);
     regfree(&temp_regex);
     pclose(fp);
     printf("[DEBUG] Completed insert_temperatures\n");
 }
+
 
 void insert_ram_usage_via_api() // Modified signature
 {
