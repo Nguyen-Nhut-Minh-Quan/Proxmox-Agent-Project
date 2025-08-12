@@ -2,7 +2,7 @@
 
 echo "🔄 Starting Tank-Agent update..."
 
-INSTALL_DIR="/opt/Proxmox-Agent"
+INSTALL_DIR="/opt/Tank-Agent"
 TEMP_CLONE="/tmp/tank-agent-update-temp"
 
 # 1. Clone fresh copy to temp directory
