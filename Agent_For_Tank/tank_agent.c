@@ -85,7 +85,6 @@ void send_tank_temperature_to_api() {
         return;
     }
     // For the Tank model, NUM_LAYERS_FROM_ENV must be 3
-    NUM_LAYERS_FROM_ENV = 3;
 
     // Set K type for all relevant channels (1 to num_tanks * NUM_LAYERS_FROM_ENV)
     // This will set channels 1, 2, 3 to K-type for 1 tank.
@@ -135,41 +134,31 @@ void send_tank_temperature_to_api() {
 
     // Create and send JSON data for each tank
     for (int tank_idx = 0; tank_idx < num_tanks_int; tank_idx++) {
-        // Base channel index for the current tank's layers (e.g., Tank 1: channels 1,2,3; Tank 2: channels 4,5,6)
         int base_channel_index = tank_idx * NUM_LAYERS_FROM_ENV + CHANNEL_OFFSET;
-
-        printf("Tank %d processed readings:\n", tank_idx + 1);
-
-        char json_payload[512];
-        char temp_str_L1[16], temp_str_L2[16], temp_str_L3[16];
         char timestamp[100];
-        // Direct access to temperat array, assuming it's populated correctly by TC-08.
-        // This mirrors your working old code's behavior.
-        snprintf(temp_str_L1, sizeof(temp_str_L1), "%.2f", temperat[base_channel_index + 0]);
-        snprintf(temp_str_L2, sizeof(temp_str_L2), "%.2f", temperat[base_channel_index + 1]);
-        snprintf(temp_str_L3, sizeof(temp_str_L3), "%.2f", temperat[base_channel_index + 2]);
-        get_iso_timestamp(timestamp,sizeof(timestamp));
-        char tank_num_str[16];
-        snprintf(tank_num_str, sizeof(tank_num_str), "%d", tank_idx + 1);
+        get_iso_timestamp(timestamp, sizeof(timestamp));
 
-        int len = snprintf(json_payload, sizeof(json_payload),
-                           "{\"TANK_LOCATION\": \"%s\", \"TANK_NUM\": \"%s\", \"L1\": \"%s\", \"L2\": \"%s\", \"L3\": \"%s\" , \"Timestamp\": \"%s\"}",
-                           tank_location,
-                           tank_num_str,
-                           temp_str_L1,
-                           temp_str_L2,
-                           temp_str_L3,
-                            timestamp);
+        // Build layer entries dynamically
+        char layer_entries[512] = "";
+        for (int layer = 0; layer < NUM_LAYERS_FROM_ENV; layer++) {
+            char temp_str[32];
+            snprintf(temp_str, sizeof(temp_str), "%.2f", temperat[base_channel_index + layer]);
+            char layer_json[64];
+            snprintf(layer_json, sizeof(layer_json), "\"L%d\": \"%s\"", layer + 1, temp_str);
+            strcat(layer_entries, layer_json);
+            if (layer < NUM_LAYERS_FROM_ENV - 1) strcat(layer_entries, ", ");
+        }
 
-        if (len < 0 || len >= sizeof(json_payload)) {
-            fprintf(stderr, "[ERROR] JSON payload for Tank %d too large or error occurred.\n", tank_idx + 1);
+        char json_payload[1024];
+        snprintf(json_payload, sizeof(json_payload),
+                 "{\"TANK_LOCATION\": \"%s\", \"TANK_NUM\": \"%d\", %s, \"Timestamp\": \"%s\"}",
+                 tank_location, tank_idx + 1, layer_entries, timestamp);
+
+        printf("[DEBUG] Sending JSON: %s\n", json_payload);
+        if (!post_json_to_api(api_url, json_payload)) {
+            fprintf(stderr, "[ERROR] Failed to post temperature data for Tank %d\n", tank_idx + 1);
         } else {
-            printf("[DEBUG] Sending JSON: %s\n", json_payload);
-            if (!post_json_to_api(api_url, json_payload)) {
-                fprintf(stderr, "[ERROR] Failed to post temperature data for Tank %d\n", tank_idx + 1);
-            } else {
-                printf("Successfully sent data for Tank %d to API.\n", tank_idx + 1);
-            }
+            printf("Successfully sent data for Tank %d to API.\n", tank_idx + 1);
         }
     }
 
@@ -209,16 +198,16 @@ void Setenv() {
     // we can still read it, but this code assumes 3 layers for the Tank API.
     const char *env_num_layers = getenv("NUM_LAYERS");
     if (env_num_layers != NULL) {
-        int temp_num_layers = atoi(env_num_layers);
-        if (temp_num_layers != 3) {
-             fprintf(stderr, "[WARN] NUM_LAYERS in .env is %d, but Tank model expects 3. Proceeding with 3.\n", temp_num_layers);
+        NUM_LAYERS_FROM_ENV = atoi(env_num_layers);
+        if (NUM_LAYERS_FROM_ENV <= 0) {
+            fprintf(stderr, "[ERROR] NUM_LAYERS must be a positive integer. Got: %s\n", env_num_layers);
+            exit(EXIT_FAILURE);
         }
-        // We will override NUM_LAYERS_FROM_ENV to 3 for the Tank model anyway.
-        NUM_LAYERS_FROM_ENV = 3;
     } else {
-        fprintf(stderr, "[WARN] NUM_LAYERS environment variable not set. Assuming 3 for Tank model.\n");
-        NUM_LAYERS_FROM_ENV = 3; // Default to 3 layers for the Tank model
+        fprintf(stderr, "[ERROR] NUM_LAYERS environment variable not set. Exiting.\n");
+        exit(EXIT_FAILURE);
     }
+
 
     const char *env_tank_location = getenv("TANK_LOCATION");
     if (env_tank_location != NULL) {
