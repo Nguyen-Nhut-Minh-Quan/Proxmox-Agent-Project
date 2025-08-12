@@ -230,7 +230,7 @@ void Setenv() {
 int main() {
     Setenv();
 
-    printf("Starting temperature capture and API send...\n");
+    printf("Starting temperature capture and API send after updating...\n");
     send_tank_temperature_to_api();
 
     free(fastapi_base_url);
