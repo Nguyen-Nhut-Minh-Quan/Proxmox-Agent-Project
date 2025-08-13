@@ -684,7 +684,7 @@ void insert_Common_info_via_api() {
                                     ? sensor_data->adapter_name : "N/A";
 
     // Build JSON payload
-    char json_payload[1024];
+    char json_payload[4096];
     int len = snprintf(json_payload, sizeof(json_payload),
                        "{\"TANK_LOCATION\": \"%s\", "
                        "\"TANK_ID\": \"%s\", "
@@ -707,7 +707,7 @@ void insert_Common_info_via_api() {
         char url_buffer[100000];
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
 
-        printf("[DEBUG] Constructed URL: %s\n", fastapi_base_url);
+        printf("[DEBUG] Constructed URL: %s\n", url_buffer);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
         fflush(stdout);
 
