@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔄 Starting Proxmox-Agent NEW VERSION..."
+echo "🔄 Starting Proxmox-Agent SUPPER NEW VERSION..."
 sudo systemctl stop proxmox_agent.timer
 sudo systemctl stop proxmox_agent.service
 INSTALL_DIR="/opt/Proxmox-Agent"
