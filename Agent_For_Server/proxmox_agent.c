@@ -165,7 +165,7 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
     CURL *curl;
     CURLcode res;
     struct curl_slist *headers = NULL;
-
+    printf("[DEBUG] post_json_to_api received URL: %s\n", url);
     curl = curl_easy_init();
     if (curl) {
         headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -206,40 +206,7 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
 
 // --- Data Insertion Functions (Calling FastAPI APIs) ---
 
-void insert_temperature_via_api(const char *core, float temp, const char *chip_name)
-{
-    printf("[DEBUG] Preparing temperature data for API\n");
-
-    char json_payload[512]; 
-    int len = snprintf(json_payload, sizeof(json_payload),
-                       "{\"TANK_LOCATION\": \"%s\", "
-                       "\"TANK_ID\": \"%s\", "
-                       "\"SERVER_ID\": \"%s\", "
-                       "\"core\": \"%s\", "
-                       "\"temperature_celsius\": %.1f, "
-                       "\"adapter\": \"%s\", "
-                       "\"Timestamp\": \"%s\"}",
-                       tank_location,      // ADDED: TANK_LOCATION
-                       tank_id,            // ADDED: TANK_ID
-                       physical_server_id,
-                       core,
-                       temp,
-                       chip_name,
-                       timestamp);
-
-    if (len < 0 || len >= sizeof(json_payload)) {
-        fprintf(stderr, "[ERROR] JSON payload for temperature too large or error occurred.\n");
-        return;
-    }
-
-    char url_buffer[256];
-    snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/temperature/", fastapi_base_url);
-
-    printf("[DEBUG] Sending temperature JSON to %s\n", url_buffer);
-    post_json_to_api(url_buffer, json_payload);
-}
-
-void insert_temperatures() // No collection parameter anymore
+void insert_temperatures()
 {
     printf("[DEBUG] Starting insert_temperatures\n");
     FILE *fp = popen("sensors", "r");
@@ -264,6 +231,14 @@ void insert_temperatures() // No collection parameter anymore
         pclose(fp);
         return;
     }
+
+    // Buffer for the full JSON array
+    char json_payload[4096];
+    size_t offset = 0;
+
+    offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, "[");
+
+    int first_entry = 1;
 
     while (fgets(line, sizeof(line), fp))
     {
@@ -291,14 +266,44 @@ void insert_temperatures() // No collection parameter anymore
 
             printf("[DEBUG] Parsed temperature: %s - Core %s => %.1f°C\n", current_chip, core, temp);
 
-            insert_temperature_via_api(core, temp, current_chip);
+            if (!first_entry)
+            {
+                offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, ",");
+            }
+            first_entry = 0;
+
+            offset += snprintf(json_payload + offset, sizeof(json_payload) - offset,
+                               "{\"TANK_LOCATION\":\"%s\","
+                               "\"TANK_ID\":\"%s\","
+                               "\"SERVER_ID\":\"%s\","
+                               "\"core\":\"%s\","
+                               "\"temperature_celsius\":%.1f,"
+                               "\"adapter\":\"%s\","
+                               "\"Timestamp\":\"%s\"}",
+                               tank_location,
+                               tank_id,
+                               physical_server_id,
+                               core,
+                               temp,
+                               current_chip,
+                               timestamp);
         }
     }
+
+    offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, "]");
+
+    // Send the array in one request
+    char url_buffer[256];
+    snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/temperature/", fastapi_base_url);
+    printf("[DEBUG] Sending batched temperature JSON to %s\n", url_buffer);
+    post_json_to_api(url_buffer, json_payload);
+
     regfree(&chip_regex);
     regfree(&temp_regex);
     pclose(fp);
     printf("[DEBUG] Completed insert_temperatures\n");
 }
+
 
 void insert_ram_usage_via_api() // Modified signature
 {
@@ -704,9 +709,11 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
     if (len < 0 || len >= sizeof(json_payload)) {
         fprintf(stderr, "[ERROR] JSON payload for Common_info too large or error occurred.\n");
     } else {
-        char url_buffer[256];
+        char url_buffer[5000];
         // Now calling the general-info endpoint which handles the check internally
+        printf("[DEBUG] fastapi_base_url before snprintf: %s\n", fastapi_base_url);
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
+        printf("[DEBUG] Constructed URL: %s\n", url_buffer);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
         post_json_to_api(url_buffer, json_payload);
     }
@@ -717,6 +724,7 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
 
 
 void Setenv() {
+
     const char *env_server_id = getenv("SERVER_OBJECT_ID");
     if (env_server_id != NULL) {
         physical_server_id = strdup(env_server_id);
@@ -773,14 +781,17 @@ void Setenv() {
 
 int main()
 {
-    printf("C file has been updated\n");
+    printf("C file has been updated twice\n");
     // Initialize libcurl global state
     get_iso_timestamp();
     curl_global_init(CURL_GLOBAL_DEFAULT);
     // mongoc_init(); // REMOVED: No longer needed as mongoc is not used directly
 
     Setenv(); // Load all environment variables
-    printf("START INSERTING\n");
+    if (!fastapi_base_url || strlen(fastapi_base_url) == 0) {
+        fprintf(stderr, "[ERROR] FASTAPI_BASE_URL is empty or not set.\n");
+    }
+    printf("Start Inserting Data in MongoDB\n");
     // REPLACED: Call the new API function for general info
     insert_Common_info_via_api();
 
@@ -791,6 +802,14 @@ int main()
     insert_cpu_usage_via_api();
     insert_virtual_stats_via_api();
 
+    // REMOVED: MongoDB cleanup
+    /*
+    if (general_info_coll) mongoc_collection_destroy(general_info_coll);
+    if (client) mongoc_client_destroy(client);
+    mongoc_cleanup(); // Clean up mongoc global state
+    */
+
+    // Free the strdup'd environment variables // Keep if mongo_client_ip is still part of Setenv and strdup'd
     free(physical_server_id);
     free(tank_id);
     free(tank_location);
