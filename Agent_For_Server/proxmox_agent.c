@@ -164,6 +164,9 @@ size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
 CURLcode post_json_to_api(const char *url, const char *json_payload) {
     CURL *curl;
     CURLcode res;
+    if (!url || strlen(url) < 5) {
+        fprintf(stderr, "[ERROR] Invalid URL passed to CURL: %s\n", url ? url : "NULL");
+    }
     struct curl_slist *headers = NULL;
     printf("[DEBUG] JSON Payload: %s\n", json_payload);
     printf("[DEBUG] post_json_to_api received URL: %s\n", url);
