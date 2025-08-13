@@ -165,33 +165,31 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
     CURL *curl;
     CURLcode res;
     struct curl_slist *headers = NULL;
+
     printf("[DEBUG] post_json_to_api received URL: %s\n", url);
+
     curl = curl_easy_init();
     if (curl) {
         headers = curl_slist_append(headers, "Content-Type: application/json");
-        
+
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_payload);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(json_payload));
-        
-        // Optional: for debugging/verbose output
-        // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); 
 
-        // Set a write function, even if it does nothing, to avoid default stdout behavior
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback); 
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, NULL); // No user data needed for dummy callback
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, NULL);
 
         res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
-            fprintf(stderr, "[ERROR] curl_easy_perform() failed for %s: %s\n", url, curl_easy_strerror(res));
+            fprintf(stderr, "[ERROR] curl_easy_perform() failed for URL: %s\nReason: %s\n", url, curl_easy_strerror(res));
         } else {
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-            if (http_code < 200 || http_code >= 300) { // Check for non-2xx status codes
-                fprintf(stderr, "[WARN] haha to %s returned HTTP %ld. Payload: %s\n", url, http_code, json_payload);
+            if (http_code < 200 || http_code >= 300) {
+                fprintf(stderr, "[WARN] API call to %s returned HTTP %ld\nPayload: %s\n", url, http_code, json_payload);
             } else {
-                printf("[DEBUG] haha to %s successful (HTTP %ld)\n", url, http_code);
+                printf("[DEBUG] API call to %s succeeded (HTTP %ld)\n", url, http_code);
             }
         }
 
@@ -201,6 +199,7 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
         fprintf(stderr, "[ERROR] Failed to initialize CURL.\n");
         res = CURLE_FAILED_INIT;
     }
+
     return res;
 }
 
@@ -705,7 +704,7 @@ void insert_Common_info_via_api() {
     if (len < 0 || len >= sizeof(json_payload)) {
         fprintf(stderr, "[ERROR] JSON payload for Common_info too large or error occurred.\n");
     } else {
-        char url_buffer[512];
+        char url_buffer[100000];
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
 
         printf("[DEBUG] Constructed URL: %s\n", url_buffer);
