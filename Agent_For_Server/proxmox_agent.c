@@ -165,7 +165,7 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
     CURL *curl;
     CURLcode res;
     struct curl_slist *headers = NULL;
-
+    printf("[DEBUG] post_json_to_api received URL: %s\n", url);
     curl = curl_easy_init();
     if (curl) {
         headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -711,6 +711,7 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
     } else {
         char url_buffer[256];
         // Now calling the general-info endpoint which handles the check internally
+        printf("[DEBUG] fastapi_base_url before snprintf: %s\n", fastapi_base_url);
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
         printf("[DEBUG] Constructed URL: %s\n", url_buffer);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
