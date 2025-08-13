@@ -720,44 +720,8 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
     printf("[DEBUG] Completed insert_Common_info_via_api\n");
 }
 
-// REMOVED: No longer needed as its logic is moved to FastAPI
-/*
-int has_doc(mongoc_collection_t *collection) {
-    int result = 0;
-    bson_t query;
-    const bson_t *doc;
-
-    bson_init(&query);
-    // Add a query for specific SERVER_ID to check if *this* server's info exists
-    BSON_APPEND_UTF8(&query, "SERVER_ID", physical_server_id);
-    BSON_APPEND_UTF8(&query, "TANK_ID", tank_id); // Also query by tank_id for uniqueness
-
-    mongoc_cursor_t *cursor = mongoc_collection_find_with_opts(collection, &query, NULL, NULL);
-
-    if (mongoc_cursor_next(cursor, &doc)) {
-        result = 1; // Document found
-    }
-
-    mongoc_cursor_destroy(cursor);
-    bson_destroy(&query);
-    return result;
-}
-*/
 
 void Setenv() {
-    const char *env_mongo_ip = getenv("MONGO_CLIENT_IP");
-    if (env_mongo_ip != NULL) {
-        mongo_client_ip = strdup(env_mongo_ip);
-        if (mongo_client_ip == NULL) {
-            perror("strdup failed for MONGO_CLIENT_IP");
-            exit(EXIT_FAILURE);
-        }
-    } else {
-        // MONGO_CLIENT_IP is now less critical as direct MongoDB connection is removed
-        // but can be kept for other purposes or removed entirely if truly no direct DB interaction
-        fprintf(stderr, "[WARN] MONGO_CLIENT_IP environment variable not set. This might not be an issue if all MongoDB interactions are via FastAPI.\n");
-        // exit(EXIT_FAILURE); // No longer exit if this is just a warning
-    }
 
     const char *env_server_id = getenv("SERVER_OBJECT_ID");
     if (env_server_id != NULL) {
@@ -822,23 +786,7 @@ int main()
     // mongoc_init(); // REMOVED: No longer needed as mongoc is not used directly
 
     Setenv(); // Load all environment variables
-
-    // REMOVED: MongoDB client and collection initialization
-    /*
-    mongoc_client_t *client = NULL;
-    mongoc_collection_t *general_info_coll = NULL;
-
-    if (mongo_client_ip != NULL) {
-        client = mongoc_client_new(mongo_client_ip);
-        if (!client) {
-            fprintf(stderr, "[ERROR] Failed to connect to MongoDB for general info check.\n");
-        } else {
-            printf("[DEBUG] Connected to MongoDB for general info check\n");
-            general_info_coll = mongoc_client_get_collection(client, "performance_db", "general_info");
-        }
-    }
-    */
-    printf("hhahahah\n");
+    printf("Start Inserting Data in MongoDB\n");
     // REPLACED: Call the new API function for general info
     insert_Common_info_via_api();
 
