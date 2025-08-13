@@ -634,62 +634,58 @@ void insert_cpu_usage_via_api() // Modified signature
 }
 
 // REVISED: This function now sends data to FastAPI for insertion, and FastAPI handles the check.
-void insert_Common_info_via_api(){ // Retained function name, but logic is API-only
+void insert_Common_info_via_api() {
     printf("[DEBUG] Starting insert_Common_info_via_api\n");
 
-    char ipconf[64] = {0}; // Initialize to empty string
+    char ipconf[64] = {0};
     SensorData* sensor_data = NULL;
-    
+
     // Get Server IP
-    FILE *fp_ipconf = popen("ip -4 addr show vmbr0 | grep -oP 'inet \\K[\\d.]+'","r");
+    FILE *fp_ipconf = popen("ip -4 addr show vmbr0 | grep -oP 'inet \\K[\\d.]+'", "r");
     if (fp_ipconf && fgets(ipconf, sizeof(ipconf), fp_ipconf)) {
-        ipconf[strcspn(ipconf, "\n")] = 0; // Remove newline
+        ipconf[strcspn(ipconf, "\n")] = 0;
         printf("[DEBUG] Server IP: %s\n", ipconf);
     } else {
         fprintf(stderr, "[ERROR] Failed to get server IP or command failed.\n");
-        strncpy(ipconf, "N/A", sizeof(ipconf)-1); // Use "N/A" if IP not found
+        strncpy(ipconf, "N/A", sizeof(ipconf) - 1);
     }
-    if(fp_ipconf) pclose(fp_ipconf);
+    if (fp_ipconf) pclose(fp_ipconf);
 
-
-    // Get Sensor Data (Sockets, Cores, Adapter)
+    // Get Sensor Data
     sensor_data = parse_sensors_output();
-    if (sensor_data == NULL) {
-        fprintf(stderr, "[ERROR] Failed to parse sensor data.\n");
-        // Proceed with default values if sensor_data is NULL
+    if (!sensor_data) {
+        fprintf(stderr, "[ERROR] Failed to parse sensor data. Using defaults.\n");
     }
 
-    // Prepare JSON payload for general info
-    char json_payload[1024]; // Larger buffer for general info
-    
     // Construct socket_names array string
-    char sockets_str[MAX_LINE_LENGTH * MAX_ITEMS + 50]; // Sufficiently large buffer
-    strcpy(sockets_str, "[");
-    for (int i = 0; i < sensor_data->num_sockets; i++) {
-        strcat(sockets_str, "\"");
-        strcat(sockets_str, sensor_data->socket_names[i]);
-        strcat(sockets_str, "\"");
-        if (i < sensor_data->num_sockets - 1) {
-            strcat(sockets_str, ", ");
+    char sockets_str[MAX_LINE_LENGTH * MAX_ITEMS + 50] = "[";
+    size_t socket_offset = strlen(sockets_str);
+    if (sensor_data) {
+        for (int i = 0; i < sensor_data->num_sockets; i++) {
+            socket_offset += snprintf(sockets_str + socket_offset, sizeof(sockets_str) - socket_offset,
+                                      "\"%s\"%s", sensor_data->socket_names[i],
+                                      (i < sensor_data->num_sockets - 1) ? ", " : "");
         }
     }
-    strcat(sockets_str, "]");
+    snprintf(sockets_str + socket_offset, sizeof(sockets_str) - socket_offset, "]");
 
     // Construct core_names array string
-    char cores_str[MAX_LINE_LENGTH * MAX_ITEMS + 50]; // Sufficiently large buffer
-    strcpy(cores_str, "[");
-    for (int i = 0; i < sensor_data->num_cores; i++) {
-        strcat(cores_str, "\"");
-        strcat(cores_str, sensor_data->core_names[i]);
-        strcat(cores_str, "\"");
-        if (i < sensor_data->num_cores - 1) {
-            strcat(cores_str, ", ");
+    char cores_str[MAX_LINE_LENGTH * MAX_ITEMS + 50] = "[";
+    size_t core_offset = strlen(cores_str);
+    if (sensor_data) {
+        for (int i = 0; i < sensor_data->num_cores; i++) {
+            core_offset += snprintf(cores_str + core_offset, sizeof(cores_str) - core_offset,
+                                    "\"%s\"%s", sensor_data->core_names[i],
+                                    (i < sensor_data->num_cores - 1) ? ", " : "");
         }
     }
-    strcat(cores_str, "]");
+    snprintf(cores_str + core_offset, sizeof(cores_str) - core_offset, "]");
 
-    char *adapter_name_val = (sensor_data && sensor_data->adapter_name && sensor_data->adapter_name[0] != '\0') ? sensor_data->adapter_name : "N/A";
+    const char *adapter_name_val = (sensor_data && sensor_data->adapter_name && sensor_data->adapter_name[0] != '\0')
+                                    ? sensor_data->adapter_name : "N/A";
 
+    // Build JSON payload
+    char json_payload[1024];
     int len = snprintf(json_payload, sizeof(json_payload),
                        "{\"TANK_LOCATION\": \"%s\", "
                        "\"TANK_ID\": \"%s\", "
@@ -709,15 +705,16 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
     if (len < 0 || len >= sizeof(json_payload)) {
         fprintf(stderr, "[ERROR] JSON payload for Common_info too large or error occurred.\n");
     } else {
-        char url_buffer[5000];
-        // Now calling the general-info endpoint which handles the check internally
-        printf("[DEBUG] fastapi_base_url before snprintf: %s\n", fastapi_base_url);
+        char url_buffer[512];
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
+
         printf("[DEBUG] Constructed URL: %s\n", url_buffer);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
+        fflush(stdout);
+
         post_json_to_api(url_buffer, json_payload);
     }
-    
+
     if (sensor_data) free_sensor_data(sensor_data);
     printf("[DEBUG] Completed insert_Common_info_via_api\n");
 }
