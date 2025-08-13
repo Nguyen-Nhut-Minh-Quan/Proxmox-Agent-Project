@@ -235,7 +235,7 @@ void insert_temperatures()
     }
 
     // Buffer for the full JSON array
-    char json_payload[4096];
+    char json_payload[100000];
     size_t offset = 0;
 
     offset += snprintf(json_payload + offset, sizeof(json_payload) - offset, "[");
@@ -327,7 +327,7 @@ void insert_ram_usage_via_api() // Modified signature
     }
     pclose(fp);
     
-    char json_payload[512];
+    char json_payload[100000];
     int len = snprintf(json_payload, sizeof(json_payload),
                        "{\"TANK_LOCATION\": \"%s\", "
                        "\"TANK_ID\": \"%s\", "
@@ -513,7 +513,7 @@ void insert_disk_stats_via_api() // Modified signature
                 continue;
             }
             
-            char json_payload[1024]; // Larger buffer for disk stats
+            char json_payload[1000000]; // Larger buffer for disk stats
             int len = snprintf(json_payload, sizeof(json_payload),
                                "{\"TANK_LOCATION\": \"%s\", "
                                "\"TANK_ID\": \"%s\", "
@@ -608,7 +608,7 @@ void insert_cpu_usage_via_api() // Modified signature
     printf("[DEBUG] Load average: %s\n", loadavg);
 
     // Step 4: Construct JSON and send to API
-    char json_payload[512];
+    char json_payload[100000];
     int len = snprintf(json_payload, sizeof(json_payload),
                        "{\"TANK_LOCATION\": \"%s\", "
                        "\"TANK_ID\": \"%s\", "
@@ -687,7 +687,7 @@ void insert_Common_info_via_api() {
                                     ? sensor_data->adapter_name : "N/A";
 
     // Build JSON payload
-    char json_payload[4096];
+    char json_payload[1000000];
     int len = snprintf(json_payload, sizeof(json_payload),
                        "{\"TANK_LOCATION\": \"%s\", "
                        "\"TANK_ID\": \"%s\", "
