@@ -634,7 +634,7 @@ void insert_cpu_usage_via_api() // Modified signature
 
 // REVISED: This function now sends data to FastAPI for insertion, and FastAPI handles the check.
 void insert_Common_info_via_api() {
-    printf("[DEBUG] Starting insert_Common_info_via_api\n");
+    printf("[DEBUG] Starting insert_Common_info_via_api aaaa\n");
 
     char ipconf[64] = {0};
     SensorData* sensor_data = NULL;
@@ -656,36 +656,46 @@ void insert_Common_info_via_api() {
         fprintf(stderr, "[ERROR] Failed to parse sensor data. Using defaults.\n");
     }
 
-    // Construct socket_names array string
-    char sockets_str[MAX_LINE_LENGTH * MAX_ITEMS + 50] = "[";
+    // Allocate buffers
+    char *sockets_str = malloc(4096);
+    char *cores_str = malloc(4096);
+    char *json_payload = malloc(8192);
+    char *url_buffer = malloc(1024);
+
+    if (!sockets_str || !cores_str || !json_payload || !url_buffer) {
+        fprintf(stderr, "[ERROR] Memory allocation failed\n");
+        goto cleanup;
+    }
+
+    // Build socket_names
+    strcpy(sockets_str, "[");
     size_t socket_offset = strlen(sockets_str);
     if (sensor_data) {
         for (int i = 0; i < sensor_data->num_sockets; i++) {
-            socket_offset += snprintf(sockets_str + socket_offset, sizeof(sockets_str) - socket_offset,
+            socket_offset += snprintf(sockets_str + socket_offset, 4096 - socket_offset,
                                       "\"%s\"%s", sensor_data->socket_names[i],
                                       (i < sensor_data->num_sockets - 1) ? ", " : "");
         }
     }
-    snprintf(sockets_str + socket_offset, sizeof(sockets_str) - socket_offset, "]");
+    snprintf(sockets_str + socket_offset, 4096 - socket_offset, "]");
 
-    // Construct core_names array string
-    char cores_str[MAX_LINE_LENGTH * MAX_ITEMS + 50] = "[";
+    // Build core_names
+    strcpy(cores_str, "[");
     size_t core_offset = strlen(cores_str);
     if (sensor_data) {
         for (int i = 0; i < sensor_data->num_cores; i++) {
-            core_offset += snprintf(cores_str + core_offset, sizeof(cores_str) - core_offset,
+            core_offset += snprintf(cores_str + core_offset, 4096 - core_offset,
                                     "\"%s\"%s", sensor_data->core_names[i],
                                     (i < sensor_data->num_cores - 1) ? ", " : "");
         }
     }
-    snprintf(cores_str + core_offset, sizeof(cores_str) - core_offset, "]");
+    snprintf(cores_str + core_offset, 4096 - core_offset, "]");
 
     const char *adapter_name_val = (sensor_data && sensor_data->adapter_name && sensor_data->adapter_name[0] != '\0')
                                     ? sensor_data->adapter_name : "N/A";
 
-    // Build JSON payload
-    char json_payload[4096];
-    int len = snprintf(json_payload, sizeof(json_payload),
+    // Build JSON
+    int len = snprintf(json_payload, 8192,
                        "{\"TANK_LOCATION\": \"%s\", "
                        "\"TANK_ID\": \"%s\", "
                        "\"SERVER_IP\": \"%s\", "
@@ -701,23 +711,27 @@ void insert_Common_info_via_api() {
                        cores_str,
                        adapter_name_val);
 
-    if (len < 0 || len >= sizeof(json_payload)) {
-        fprintf(stderr, "[ERROR] JSON payload for Common_info too large or error occurred.\n");
-    } else {
-        char url_buffer[100000];
-        snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
-
-        printf("[DEBUG] Constructed URL: %s\n", url_buffer);
-        printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
-        fflush(stdout);
-
-        post_json_to_api(url_buffer, json_payload);
+    if (len < 0 || len >= 8192) {
+        fprintf(stderr, "[ERROR] JSON payload too large or snprintf failed\n");
+        goto cleanup;
     }
 
+    snprintf(url_buffer, 1024, "%s/physical-server/general-info/", fastapi_base_url);
+    printf("[DEBUG] Constructed URL: %s\n", url_buffer);
+    printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
+    fflush(stdout);
+
+    post_json_to_api(url_buffer, json_payload);
+
+cleanup:
     if (sensor_data) free_sensor_data(sensor_data);
+    free(sockets_str);
+    free(cores_str);
+    free(json_payload);
+    free(url_buffer);
+
     printf("[DEBUG] Completed insert_Common_info_via_api\n");
 }
-
 
 void Setenv() {
 
