@@ -716,7 +716,7 @@ void insert_Common_info_via_api() {
         goto cleanup;
     }
 
-    snprintf(url_buffer, 1024, "%s/physical-server/general-info/", fastapi_base_url);
+    snprintf(url_buffer, 1025, "%s/physical-server/general-info/", fastapi_base_url);
     printf("[DEBUG] Constructed URL: %s\n", url_buffer);
     printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
     fflush(stdout);
