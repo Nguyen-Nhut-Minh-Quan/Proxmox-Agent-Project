@@ -629,7 +629,7 @@ void insert_cpu_usage_via_api() // Modified signature
         fprintf(stderr, "[ERROR] JSON payload for CPU usage too large or error occurred.\n");
     } else {
         char url_buffer[256];
-        snprintf(url_buffer, sizeof(url_buffer), "/physical-server/cpu-usage/%s", fastapi_base_url);
+        snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/cpu-usage/", fastapi_base_url);
         post_json_to_api(url_buffer, json_payload);
     }
     printf("[DEBUG] Completed insert_cpu_usage\n");
