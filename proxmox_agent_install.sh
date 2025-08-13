@@ -82,7 +82,7 @@ sudo mkdir -p "$INSTALL_DIR"
 sudo cp "$REPO_TEMP/Agent_For_Server/proxmox_agent" "$INSTALL_DIR/"
 sudo cp "$REPO_TEMP/Agent_For_Server/VirtualServerStat.sh" "$INSTALL_DIR/"
 sudo cp "$REPO_TEMP/Agent_For_Server/.env_example" "$INSTALL_DIR/"
-sudo chmod +x "$INSTALL_DIR/proxmox_agent"
+sudo chmod +x "$INSTALL_DIR/./proxmox_agent"
 sudo chmod +x "$INSTALL_DIR/VirtualServerStat.sh"
 
 # --- 6. Set up git repo for updates ---
