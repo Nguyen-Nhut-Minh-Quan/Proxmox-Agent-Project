@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔄 Starting Proxmox-Agent..."
+echo "🔄 Starting Proxmox-Agent NEW VERSION..."
 sudo systemctl stop proxmox_agent.timer
 sudo systemctl stop proxmox_agent.service
 INSTALL_DIR="/opt/Proxmox-Agent"
@@ -56,6 +56,7 @@ echo "🔧 Updating systemd service and timer..."
 sudo cp "$TEMP_CLONE/systemd/proxmox_agent.service" /etc/systemd/system/
 sudo cp "$TEMP_CLONE/systemd/proxmox_agent.timer" /etc/systemd/system/
 sudo systemctl daemon-reload
+sudo systemctl restart proxmox_agent.timer
 sudo systemctl restart proxmox_agent.service
 
 # 4. Clean up temp folder
