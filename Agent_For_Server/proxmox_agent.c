@@ -709,11 +709,13 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
     if (len < 0 || len >= sizeof(json_payload)) {
         fprintf(stderr, "[ERROR] JSON payload for Common_info too large or error occurred.\n");
     } else {
-        char url_buffer[256];
+        char url_buffer[500];
         // Now calling the general-info endpoint which handles the check internally
         printf("[DEBUG] fastapi_base_url before snprintf: %s\n", fastapi_base_url);
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
+        printf("[DEBUG] Constructed URL: STATIC TEST\n");
         printf("[DEBUG] Constructed URL: %s\n", url_buffer);
+        fflush(stdout);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
         post_json_to_api(url_buffer, json_payload);
     }
