@@ -165,13 +165,13 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
     CURL *curl;
     CURLcode res;
     struct curl_slist *headers = NULL;
-
+    printf("[DEBUG] JSON Payload: %s\n", json_payload);
     printf("[DEBUG] post_json_to_api received URL: %s\n", url);
 
     curl = curl_easy_init();
     if (curl) {
         headers = curl_slist_append(headers, "Content-Type: application/json");
-
+        printf("[DEBUG] Final URL passed to CURL: %s\n", url);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_payload);
@@ -179,7 +179,7 @@ CURLcode post_json_to_api(const char *url, const char *json_payload) {
 
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, NULL);
-
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
             fprintf(stderr, "[ERROR] curl_easy_perform() failed for URL: %s\nReason: %s\n", url, curl_easy_strerror(res));
