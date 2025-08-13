@@ -1,7 +1,8 @@
 #!/bin/bash
 
 echo "🔄 Starting Proxmox-Agent update..."
-
+sudo systemctl stop proxmox_agent.timer
+sudo systemctl stop proxmox_agent.service
 INSTALL_DIR="/opt/Proxmox-Agent"
 TEMP_CLONE="/tmp/proxmox-agent-update-temp"
 check_and_install() {
