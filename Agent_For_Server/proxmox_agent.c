@@ -712,6 +712,7 @@ void insert_Common_info_via_api(){ // Retained function name, but logic is API-o
         char url_buffer[256];
         // Now calling the general-info endpoint which handles the check internally
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
+        printf("[DEBUG] Constructed URL: %s\n", url_buffer);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
         post_json_to_api(url_buffer, json_payload);
     }
@@ -779,13 +780,16 @@ void Setenv() {
 
 int main()
 {
-    printf("C file has been updated\n");
+    printf("C file has been updated twice\n");
     // Initialize libcurl global state
     get_iso_timestamp();
     curl_global_init(CURL_GLOBAL_DEFAULT);
     // mongoc_init(); // REMOVED: No longer needed as mongoc is not used directly
 
     Setenv(); // Load all environment variables
+    if (!fastapi_base_url || strlen(fastapi_base_url) == 0) {
+        fprintf(stderr, "[ERROR] FASTAPI_BASE_URL is empty or not set.\n");
+    }
     printf("Start Inserting Data in MongoDB\n");
     // REPLACED: Call the new API function for general info
     insert_Common_info_via_api();
