@@ -707,7 +707,7 @@ void insert_Common_info_via_api() {
         char url_buffer[100000];
         snprintf(url_buffer, sizeof(url_buffer), "%s/physical-server/general-info/", fastapi_base_url);
 
-        printf("[DEBUG] Constructed URL: %s\n", url_buffer);
+        printf("[DEBUG] Constructed URL: %s\n", fastapi_base_url);
         printf("[DEBUG] Sending Common_info JSON to %s\n", url_buffer);
         fflush(stdout);
 
@@ -777,7 +777,7 @@ void Setenv() {
 
 int main()
 {
-    printf("C file has been updated twice\n");
+    printf("C file has been updated three times\n");
     // Initialize libcurl global state
     get_iso_timestamp();
     curl_global_init(CURL_GLOBAL_DEFAULT);
