@@ -778,6 +778,7 @@ void Setenv() {
 int main()
 {
     setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
     printf("C file has been updated three times\n");
     // Initialize libcurl global state
     get_iso_timestamp();
