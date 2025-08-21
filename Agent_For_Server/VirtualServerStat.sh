@@ -47,15 +47,18 @@ qm list | awk 'NR>1 {print $1, $2, $3}' | while read -r VMID NAME STATUS; do
                 RAM_STR="?"
             fi
 
-            # Disk usage (from status API)
-            STATUS_JSON=$(pvesh get /nodes/$hostname/qemu/$VMID/status/current --output-format json 2>/dev/null)
-            DISK_USED=$(echo "$STATUS_JSON" | jq '.disk')
-            DISK_TOTAL=$(echo "$STATUS_JSON" | jq '.maxdisk')
+            # Disk usage via LVM-thin
+            LV_INFO=$(lvs --noheadings -o lv_name,lv_size,data_percent | grep "vm-${VMID}-disk-0")
+            if [[ -n "$LV_INFO" ]]; then
+                LV_NAME=$(echo "$LV_INFO" | awk '{print $1}')
+                LV_SIZE=$(echo "$LV_INFO" | awk '{print $2}')
+                LV_USED_PCT=$(echo "$LV_INFO" | awk '{print $3}')
 
-            if [[ "$DISK_USED" != "null" && "$DISK_TOTAL" != "null" && "$DISK_TOTAL" != "0" ]]; then
-                DISK_USED_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_USED / (1024*1024*1024)}")
-                DISK_TOTAL_GB=$(awk "BEGIN {printf \"%.2f\", $DISK_TOTAL / (1024*1024*1024)}")
-                DISK_STR="${DISK_USED_GB}/${DISK_TOTAL_GB}"
+                # Strip unit (assume g)
+                TOTAL_GB=$(echo "$LV_SIZE" | sed 's/[A-Za-z]//g')
+                USED_GB=$(awk "BEGIN {printf \"%.2f\", $TOTAL_GB * $LV_USED_PCT / 100}")
+
+                DISK_STR="${USED_GB}/${TOTAL_GB}"
             else
                 DISK_STR="?"
             fi
